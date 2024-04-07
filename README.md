@@ -1,1 +1,1 @@
-[github.com/gompk.github.io](https://gompk.github.io/)
+github.com/gompk.github.io
