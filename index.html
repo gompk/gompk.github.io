@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>gompk!</title>
     <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('your-font-file.woff2') format('woff2'),
+                 url('your-font-file.woff') format('woff'),
+                 url('your-font-file.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -49,7 +58,7 @@
             font-size: 2.5rem;
             font-weight: bold;
             text-decoration: none;
-            font-family: 'Courier New', monospace;
+            font-family: Garamond, serif;
             transition: opacity 0.3s ease, transform 0.3s ease;
             display: inline-block;
         }
@@ -59,21 +68,7 @@
             transform: translateX(-5px);
         }
 
-        .text-item:nth-child(2) {
-            padding-right: 5%;
-        }
 
-        .text-item:nth-child(3) {
-            padding-right: 5%;
-        }
-
-        .text-item:nth-child(4) {
-            padding-right: 5%;
-        }
-
-        .text-item:nth-child(5) {
-            padding-right: 5%;
-        }
 
         @keyframes fadeIn {
             from {
@@ -89,25 +84,24 @@
         @media (max-width: 768px) {
             .text-item {
                 font-size: 2.5rem;
-                margin-bottom: 40px;
             }
 
             .text-item:first-child {
                 padding-left: 5%;
                 margin-bottom: 60px;
             }
+
+            .link-item a {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="text-item">gompk !</div>
-     <div class="link-item"><a href="https://en.wikipedia.org/wiki/User:Gompk">wiki</a></div>
-    <div class="text-item">discord</div>
-    <div class="link-item"<a href="https://www.inaturalist.org/people/gompk">iNat</a></div>
-    <div class="text-item">reddit</div>
-    <div class="text-item">twt</div>
+    <div class="link-item"><a href="https://en.wikipedia.org/wiki/User:Gompk">wiki</a></div>
+    <div class="link-item"><a href="https://www.reddit.com/user/gompk_/">reddit</a></div>
+    <div class="link-item"><a href="https://x.com/gonkmeister">twt</a></div>
     <div class="link-item"><a href="timeline.html">timeline</a></div>
 </body>
 </html>
-
-
