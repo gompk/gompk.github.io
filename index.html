@@ -1,14 +1,109 @@
 <!DOCTYPE html>
-<html>
- <link rel="stylesheet" href="./style.css"> 
+<html lang="en">
 <head>
-  <title>Gompktown</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gompk!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2d5a3d 0%, #1e4d2b 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 60px 40px;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .text-item {
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 60px;
+            text-align: right;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .text-item:first-child {
+            text-align: left;
+            padding-left: 15%;
+            margin-bottom: 100px;
+        }
+
+        .link-item {
+            text-align: right;
+            padding-right: 5%;
+            margin-bottom: 50px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .link-item a {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .link-item a:hover {
+            opacity: 0.7;
+            transform: translateX(-5px);
+        }
+
+        .text-item:nth-child(2) {
+            padding-right: 5%;
+        }
+
+        .text-item:nth-child(3) {
+            padding-right: 5%;
+        }
+
+        .text-item:nth-child(4) {
+            padding-right: 5%;
+        }
+
+        .text-item:nth-child(5) {
+            padding-right: 5%;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .text-item {
+                font-size: 2.5rem;
+                margin-bottom: 40px;
+            }
+
+            .text-item:first-child {
+                padding-left: 5%;
+                margin-bottom: 60px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Gompktown</h1>
-  <p>Gompking around</p>
-  <a href="https://en.wikipedia.org/wiki/User:Gompk">Gompk on Wikipedia</a>
-  <br><br>
-  <img width='640' height='360' src="light.png" alt="mamma mia">
+    <div class="text-item">gompk !</div>
+    <div class="text-item">wiki</div>
+    <div class="text-item">iNat</div>
+    <div class="text-item">reddit</div>
+    <div class="text-item">twt</div>
 </body>
 </html>
