@@ -16,64 +16,39 @@
       overflow-x: hidden;
     }
 
-    .banner {
+    /* Pill button in top-left */
+    .home-btn {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 15px;
-      overflow: hidden;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Create hazy gradient layers */
-    .banner::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 20% 50%, rgba(70, 150, 90, 0.6), transparent 60%),
-                  radial-gradient(circle at 80% 30%, rgba(40, 120, 70, 0.5), transparent 60%),
-                  radial-gradient(circle at 50% 80%, rgba(50, 160, 90, 0.4), transparent 60%),
-                  linear-gradient(270deg, #1e4d2b, #2d5a3d, #3c6e47, #1e4d2b);
-      background-size: 200% 200%;
-      filter: blur(8px);
-      transition: transform 1s ease;
-      z-index: -1;
-    }
-
-    /* Animate the bokeh drift on hover */
-    .banner:hover::before {
-      animation: cloudyDrift 10s linear infinite;
-    }
-
-    @keyframes cloudyDrift {
-      0% {
-        background-position: 0% 50%;
-      }
-      100% {
-        background-position: -200% 50%;
-      }
-    }
-
-    .banner a {
+      top: 10px;
+      left: 10px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #295739;
       color: white;
-      font-size: 0.5rem;
+      font-family: Arial, sans-serif;
+      font-size: 0.8rem;
       font-weight: bold;
       text-decoration: none;
-      font-family: Arial, sans-serif;
-      position: relative;
-      z-index: 2;
-      padding-left: 40px;
+      z-index: 1000;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      background-size: 200% 200%;
     }
 
-    .banner a:hover {
-      opacity: 0.7;
+    /* Animated gradient on hover */
+    .home-btn:hover {
+      background: linear-gradient(270deg, #295739, #3d6f4a, #295739);
+      background-size: 300% 300%;
+      animation: gradientShift 6s linear infinite;
+    }
+
+    @keyframes gradientShift {
+      from { background-position: 0% 50%; }
+      to { background-position: -200% 50%; }
     }
 
     .content {
-      margin-top: 20px;
+      margin-top: 40px;
     }
 
     img {
@@ -84,12 +59,10 @@
   </style>
 </head>
 <body>
-  <div class="banner" onclick="window.location.href='index.html'">
-    <a></a>
-  </div>
+  <a href="index.html" class="home-btn">Home</a>
 
   <div class="content">
-    <img src="timeline.png" alt="">
+    <img src="timeline.png" alt="Long image">
   </div>
 </body>
 </html>
