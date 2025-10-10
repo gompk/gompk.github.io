@@ -13,13 +13,11 @@
             font-weight: normal;
             font-style: normal;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             background: linear-gradient(135deg, #2d5a3d 0%, #1e4d2b 100%);
             min-height: 100vh;
@@ -29,8 +27,47 @@
             padding: 60px 40px;
             font-family: 'Arial', sans-serif;
             overflow-x: hidden;
+            position: relative;
         }
-
+        
+        /* Bokeh effect container */
+        .bokeh-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        /* Individual bokeh blob */
+        .bokeh-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0;
+            animation: bokehFloat 8s ease-in-out infinite;
+        }
+        
+        @keyframes bokehFloat {
+            0%, 100% {
+                opacity: 0;
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: translate(var(--float-x), var(--float-y)) scale(var(--scale));
+            }
+        }
+        
+        /* Content wrapper to keep it above bokeh */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        
         .text-item {
             color: white;
             font-size: 4rem;
@@ -39,20 +76,17 @@
             text-align: center;
             animation: fadeIn 0.6s ease-out;
         }
-
         .text-item:first-child {
             text-align: center;
             padding-left: 15%;
             margin-bottom: 100px;
         }
-
         .link-item {
             text-align: center;
             padding-right: 5%;
             margin-bottom: 50px;
             animation: fadeIn 0.6s ease-out;
         }
-
         .link-item a {
             color: white;
             font-size: 2.5rem;
@@ -62,14 +96,10 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
             display: inline-block;
         }
-
         .link-item a:hover {
             opacity: 0.7;
             transform: translateX(-5px);
         }
-
-
-
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -80,30 +110,6 @@
                 transform: translateX(0);
             }
         }
-
-        @media (max-width: 768px) {
-            .text-item {
-                font-size: 2.5rem;
-            }
-
-            .text-item:first-child {
-                padding-left: 5%;
-                margin-bottom: 60px;
-            }
-
-            .link-item a {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="text-item">gompk !</div>
-    <div class="link-item"><a href="https://en.wikipedia.org/wiki/User:Gompk">wiki</a></div>
-    <div class="link-item"><span class="discord-link" onclick="this.textContent='@gompk'">discord</span></div>
-    <div class="link-item"><a href="timeline.html">timeline</a></div>
-
-    <style>
         .discord-link {
             color: white;
             font-size: 2.5rem;
@@ -112,12 +118,121 @@
             font-family: 'Arial', sans-serif;
             transition: opacity 0.3s ease, transform 0.3s ease;
             display: inline-block;
+            cursor: pointer;
         }
-
         .discord-link:hover {
             opacity: 0.7;
             transform: translateX(-5px);
         }
+        @media (max-width: 768px) {
+            .text-item {
+                font-size: 2.5rem;
+            }
+            .text-item:first-child {
+                padding-left: 5%;
+                margin-bottom: 60px;
+            }
+            .link-item a {
+                font-size: 1.8rem;
+            }
+            .discord-link {
+                font-size: 1.8rem;
+            }
+        }
     </style>
+</head>
+<body>
+    <!-- Bokeh effect container -->
+    <div class="bokeh-container" id="bokehContainer"></div>
+    
+    <!-- Content wrapper -->
+    <div class="content">
+        <div class="text-item">gompk !</div>
+        <div class="link-item"><span class="discord-link" onclick="this.textContent='@ gompk'">discord</span></div>
+        <div class="link-item"><a href="https://en.wikipedia.org/wiki/User:Gompk">wiki</a></div>
+        <div class="link-item"><a href="timeline.html">timeline</a></div>
+    </div>
+
+    <script>
+        // Bokeh effect colors - complementary to the green theme
+        const bokehColors = [
+            'rgba(147, 197, 114, 0.5)',  // Light green
+            'rgba(95, 158, 160, 0.5)',   // Cadet blue
+            'rgba(176, 224, 230, 0.5)',  // Powder blue
+            'rgba(255, 218, 185, 0.5)',  // Peach
+            'rgba(255, 253, 208, 0.5)',  // Cream
+            'rgba(152, 251, 152, 0.5)'   // Pale green
+        ];
+
+        function createBokehBlob() {
+            const container = document.getElementById('bokehContainer');
+            const blob = document.createElement('div');
+            blob.className = 'bokeh-blob';
+            
+            // Random size between 100px and 300px
+            const size = Math.random() * 200 + 100;
+            
+            // Random starting position
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight;
+            
+            // Random float distance
+            const floatX = (Math.random() - 0.5) * 100;
+            const floatY = (Math.random() - 0.5) * 100;
+            const scale = Math.random() * 0.5 + 0.75;
+            
+            // Random color from the palette
+            const color = bokehColors[Math.floor(Math.random() * bokehColors.length)];
+            
+            // Random duration between 6 and 12 seconds
+            const duration = Math.random() * 6 + 6;
+            
+            // Random delay to stagger animations
+            const delay = Math.random() * 4;
+            
+            blob.style.width = size + 'px';
+            blob.style.height = size + 'px';
+            blob.style.left = startX + 'px';
+            blob.style.top = startY + 'px';
+            blob.style.background = color;
+            blob.style.animationDuration = duration + 's';
+            blob.style.animationDelay = delay + 's';
+            blob.style.setProperty('--float-x', floatX + 'px');
+            blob.style.setProperty('--float-y', floatY + 'px');
+            blob.style.setProperty('--scale', scale);
+            
+            container.appendChild(blob);
+            
+            // Remove blob after animation completes to prevent memory issues
+            setTimeout(() => {
+                blob.remove();
+            }, (duration + delay) * 1000);
+        }
+
+        // Create initial blobs
+        function initBokeh() {
+            const numBlobs = 12;
+            for (let i = 0; i < numBlobs; i++) {
+                setTimeout(() => createBokehBlob(), i * 500);
+            }
+        }
+
+        // Continuously create new blobs
+        function maintainBokeh() {
+            setInterval(() => {
+                createBokehBlob();
+            }, 3000);
+        }
+
+        // Initialize on page load
+        initBokeh();
+        maintainBokeh();
+
+        // Recreate blobs on window resize
+        window.addEventListener('resize', () => {
+            document.getElementById('bokehContainer').innerHTML = '';
+            initBokeh();
+        });
+    </script>
 </body>
 </html>
