@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field ID — a birdwatcher's guessing game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #141f19;
+    --bg-2: #0f1814;
+    --surface: #1c2b23;
+    --surface-2: #24362c;
+    --line: #33473c;
+    --paper: #e8e2cd;
+    --ink: #12190f;
+    --muted: #93a898;
+    --gold: #e0ac45;
+    --gold-dim: #8a6a2c;
+    --rust: #c1592f;
+    --teal: #5b9c92;
+    --leaf: #7ba05b;
+    --danger: #a3402c;
+    --radius: 3px;
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+
+  body{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(224,172,69,0.05), transparent 40%),
+      var(--bg);
+    color: var(--paper);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    background-image:
+      repeating-radial-gradient(circle at 50% 0%, transparent 0, transparent 68px, rgba(123,160,91,0.035) 69px, transparent 70px),
+      var(--bg);
+    background-attachment: fixed;
+  }
+
+  a{ color: var(--gold); }
+
+  ::selection{ background: var(--gold); color: var(--ink); }
+
+  /* ---------- layout ---------- */
+  .wrap{
+    max-width: min(1680px, 96vw);
+    margin: 0 auto;
+    padding: 18px 20px 32px;
+  }
+
+  header.top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .brand-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 6px;
+  }
+
+  h1.brand{
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 42px);
+    margin: 0;
+    color: var(--paper);
+    letter-spacing: -0.01em;
+  }
+  h1.brand em{
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  .subtitle{
+    font-size: 13px;
+    color: var(--muted);
+    margin: 4px 0 0;
+    max-width: 46ch;
+    line-height: 1.45;
+  }
+
+  .stats{
+    display:flex;
+    gap: 22px;
+    font-family: var(--font-mono);
+  }
+  .stat{ text-align: right; }
+  .stat .num{
+    font-size: 26px;
+    color: var(--gold);
+    font-weight: 600;
+    line-height: 1;
+    display:block;
+  }
+  .stat .lbl{
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  main.grid{
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 860px){
+    main.grid{ grid-template-columns: 1fr; }
+    .photo-frame{ height: min(48vh, 480px) !important; }
+    .photo-card.revealed .photo-frame{ height: min(52vh, 520px) !important; }
+  }
+  .right-col{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  /* ---------- photo card ---------- */
+  .photo-card{ overflow: hidden; }
+  .photo-frame{
+    position: relative;
+    width: 100%;
+    height: min(78vh, 780px);
+    background: var(--bg-2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: height 0.35s ease;
+  }
+  .photo-card.revealed .photo-frame{
+    height: min(82vh, 820px);
+  }
+  .photo-frame img{
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display:block;
+    margin: auto;
+    animation: fadein 0.5s ease;
+  }
+  @keyframes fadein{ from{ opacity:0 } to{ opacity: 1 } }
+
+  .skeleton{
+    position:absolute; inset:0;
+    background: linear-gradient(100deg, var(--bg-2) 30%, #253a2e 50%, var(--bg-2) 70%);
+    background-size: 250% 100%;
+    animation: shimmer 1.6s infinite;
+  }
+  @keyframes shimmer{ 0%{ background-position: 150% 0 } 100%{ background-position: -50% 0 } }
+
+  .photo-credit{
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    padding: 9px 14px;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .photo-credit a{ color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+  .photo-credit a:hover{ color: var(--gold); }
+
+  /* ---------- guess panel ---------- */
+  .guess-panel{ padding: 14px; }
+  .guess-panel h2{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 10px;
+  }
+
+  .guess-row{
+    display:flex;
+    gap: 8px;
+  }
+  .guess-row input{
+    flex: 1;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 12px 13px;
+    font-size: 15px;
+    font-family: var(--font-body);
+  }
+  .guess-row input:focus{ outline: 2px solid var(--gold); outline-offset: -1px; }
+  .guess-row input::placeholder{ color: #5b6d61; }
+
+  button{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--paper);
+    padding: 12px 16px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  button:hover:not(:disabled){ border-color: var(--gold); }
+  button:active:not(:disabled){ transform: translateY(1px); }
+  button:disabled{ opacity: 0.45; cursor: not-allowed; }
+
+  button.primary{
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  button.primary:hover:not(:disabled){ background: #eebd5f; }
+
+  button.ghost{
+    background: transparent;
+    color: var(--muted);
+  }
+
+  #giveUpBtn:not(:disabled), #nextBtn:not(:disabled){
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #06210f;
+    font-weight: 600;
+  }
+  #giveUpBtn:not(:disabled):hover, #nextBtn:not(:disabled):hover{
+    background: #3ddc84;
+    border-color: #3ddc84;
+  }
+
+  .panel-foot{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-top: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .hint{ font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- feed ---------- */
+  .feed{
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .feed li{
+    display:flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--muted);
+    border-radius: var(--radius);
+    padding: 9px 11px;
+    font-size: 13px;
+    animation: slidein 0.25s ease;
+  }
+  @keyframes slidein{ from{ opacity:0; transform: translateY(-6px);} to{ opacity:1; transform:none; } }
+  .feed li.s-100{ border-left-color: var(--gold); }
+  .feed li.s-hi{ border-left-color: var(--leaf); }
+  .feed li.s-mid{ border-left-color: var(--teal); }
+  .feed li.s-lo{ border-left-color: var(--rust); }
+  .feed li.s-none{ border-left-color: var(--danger); }
+  .feed li.s-echo{ border-left-color: var(--teal); border-left-style: dashed; }
+  .feed .fq{ color: var(--muted); flex: 0 0 auto; font-family: var(--font-mono); font-size: 11px; }
+  .feed .fm{ flex: 1; }
+  .feed .fm b{ color: var(--paper); }
+  .feed .fs{
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 13px;
+    flex: 0 0 auto;
+    min-width: 34px;
+    text-align: right;
+    color: var(--gold);
+  }
+
+  /* ---------- ladder / cladogram ---------- */
+  .ladder-card{ padding: 16px 16px 18px; position: sticky; top: 16px; }
+  .ladder-card h2{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 4px;
+  }
+  .best-line{
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    min-height: 16px;
+  }
+  .best-line b{ color: var(--gold); }
+
+  .ladder{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rung{
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 7px 4px 7px 0;
+  }
+
+  .rung-marker{
+    flex: 0 0 16px;
+    width: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .rung-marker .dot{
+    flex: 0 0 auto;
+    width: 9px; height: 9px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--muted);
+    transition: all 0.3s;
+  }
+  .rung-marker .tick{
+    flex: 1 1 auto;
+    width: 1px;
+    min-height: 10px;
+    margin-top: 3px;
+    background: var(--line);
+    opacity: 0.55;
+  }
+  .rung:last-child .rung-marker .tick{ display: none; }
+
+  .rung.revealed .rung-marker .dot{
+    border-color: var(--gold);
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(224,172,69,0.18);
+  }
+  .rung.revealed .rung-marker .tick{ background: var(--gold-dim); opacity: 0.85; }
+
+  .rung.revealed.auto .rung-marker .dot{
+    background: transparent;
+    border-color: var(--muted);
+    border-style: dashed;
+    box-shadow: none;
+  }
+  .rung.revealed.auto .rung-marker .tick{ background: var(--line); opacity: 0.55; }
+  .rung.revealed.auto .rk-name{ color: #7d8e82; }
+  .rung.revealed.auto .rk-common{ color: var(--muted); }
+
+  .rung-body{
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-bottom: 2px;
+  }
+  .rung-top{
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .rung .rk-flag{
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 5px;
+    vertical-align: middle;
+  }
+  .rung.revealed.auto .rk-flag{ display: inline-block; }
+
+  .rung .rk-label{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display:block;
+    margin-bottom: 2px;
+  }
+  .rung .rk-name{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    color: #4a5c50;
+    transition: color 0.2s;
+  }
+  .rung .rk-common{
+    font-size: 11.5px;
+    color: var(--muted);
+    display: block;
+    margin-top: 1px;
+    min-height: 14px;
+  }
+  .rung.revealed .rk-name{ color: var(--paper); }
+  .rung.revealed .rk-common{ color: var(--leaf); }
+
+  .reveal-box{
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    display: none;
+  }
+  .reveal-box.show{ display:block; }
+  .reveal-box a{ text-decoration: underline; text-underline-offset: 2px; }
+
+  .reveal-score{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .reveal-score b{ color: var(--gold); }
+
+  .reveal-headline{
+    margin-bottom: 14px;
+  }
+  .reveal-headline .rh-photo{
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    margin-bottom: 10px;
+  }
+  .reveal-headline .rh-name{
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--paper);
+    line-height: 1.3;
+  }
+  .reveal-headline .rh-sci{
+    font-style: italic;
+    color: var(--leaf);
+    font-size: 13px;
+  }
+  .reveal-headline .rh-credit{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .more-photos-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+  }
+  .more-photos-grid img{
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    display: block;
+  }
+
+  .reveal-section{ margin-top: 14px; }
+  .reveal-section h3{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 7px;
+  }
+  .reveal-about{
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .similar-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .similar-card{
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-2);
+    transition: border-color 0.15s;
+  }
+  .similar-card:hover{ border-color: var(--gold); }
+  .similar-card img{
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: var(--surface-2);
+  }
+  .similar-card .sc-label{
+    padding: 5px 6px 7px;
+    font-size: 10.5px;
+    color: var(--paper);
+    line-height: 1.3;
+  }
+  .similar-card .sc-label i{
+    display: block;
+    color: var(--muted);
+    font-size: 9.5px;
+    font-style: italic;
+    margin-top: 1px;
+  }
+  .reveal-note{ font-size: 11.5px; color: var(--muted); font-style: italic; }
+
+  footer.credits{
+    margin-top: 34px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  footer.credits a{ color: var(--muted); }
+
+  .region-row{
+    display:flex;
+    align-items:center;
+    gap: 9px;
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+  .region-row label{
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .region-row select{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .region-row select:focus{ outline: 2px solid var(--gold); outline-offset: -1px; }
+  .region-row select:disabled{ opacity: 0.5; cursor: wait; }
+  .region-status{ color: var(--muted); font-size: 11px; }
+
+  .difficulty-row{
+    display:flex;
+    align-items:center;
+    gap: 11px;
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+  .difficulty-row label{
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 10px;
+    flex: 0 0 auto;
+  }
+  .difficulty-row .diff-end{
+    font-size: 10px;
+    color: var(--muted);
+    flex: 0 0 auto;
+  }
+  .difficulty-row input[type="range"]{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 150px;
+    max-width: 32vw;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .difficulty-row input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--gold);
+    cursor: pointer;
+  }
+  .difficulty-row input[type="range"]::-moz-range-thumb{
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--gold);
+    cursor: pointer;
+  }
+  .difficulty-row input[type="range"]:focus{ outline: none; }
+  .difficulty-row input[type="range"]:focus::-webkit-slider-thumb{ box-shadow: 0 0 0 3px rgba(224,172,69,0.35); }
+  .diff-label{
+    color: var(--gold);
+    font-size: 11px;
+    min-width: 15ch;
+  }
+
+  .err-banner{
+    background: rgba(163,64,44,0.15);
+    border: 1px solid var(--danger);
+    color: #f0c8ba;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    margin-bottom: 14px;
+    display:none;
+  }
+  .err-banner.show{ display:block; }
+
+  /* ---------- pick-me overlay ---------- */
+  .pick-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(10,16,12,0.82);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+  .pick-overlay.show{ display: flex; }
+  .pick-modal{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    width: min(1280px, 98vw);
+    height: min(94vh, 1000px);
+    max-height: min(94vh, 1000px);
+    display: flex;
+    flex-direction: column;
+    animation: pickIn 0.18s ease;
+  }
+  @keyframes pickIn{ from{ opacity:0; transform: translateY(6px); } to{ opacity:1; transform: translateY(0); } }
+  .pick-head{
+    display:flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .pick-head-text .pk-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 4px;
+  }
+  .pick-head-text h3{
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--paper);
+  }
+  .pick-close{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 6px 11px;
+    line-height: 1;
+    font-size: 14px;
+    flex: 0 0 auto;
+  }
+  .pick-main{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 14px;
+    padding: 14px 18px;
+  }
+  .pick-photo{
+    position: relative;
+    flex: 0 0 min(34%, 380px);
+    min-width: 200px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+  .pick-photo::before{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(6,10,8,0);
+    z-index: 29;
+    pointer-events: none;
+    transition: background 0.15s ease;
+  }
+  .pick-photo:hover::before, .pick-photo:focus-within::before{
+    background: rgba(6,10,8,0.72);
+  }
+  .pick-photo img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+  }
+  .pick-photo:hover img, .pick-photo img:focus-visible{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+    max-width: 92vw;
+    max-height: 92vh;
+    object-fit: contain;
+    background: var(--bg-2);
+    border: 2px solid var(--gold);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    z-index: 30;
+    cursor: zoom-out;
+  }
+  .pick-body{
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+  @media (max-width: 760px){
+    .pick-main{ flex-direction: column; }
+    .pick-photo{ flex: 0 0 26vh; width: 100%; min-width: 0; }
+    .pick-body{ flex: 1; min-height: 0; overflow-y: auto; }
+  }
+  .pick-status{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding: 30px 0;
+    text-align: center;
+  }
+  .pick-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 10px;
+    height: 100%;
+  }
+  @media (max-width: 560px){
+    .pick-grid{ grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(5, minmax(120px, 1fr)); height: auto; }
+  }
+  .pick-cell{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    text-align: left;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    padding: 0;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--font-body);
+    transition: border-color 0.15s, opacity 0.4s, transform 0.1s;
+  }
+  .pick-cell:hover:not(:disabled){ border-color: var(--gold); }
+  .pick-cell:active:not(:disabled){ transform: translateY(1px); }
+  .pick-cell img{
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    background: var(--surface-2);
+  }
+  .pick-cell .pc-label{
+    flex: 0 0 auto;
+    padding: 8px 10px 10px;
+    font-size: 12px;
+    color: var(--paper);
+    line-height: 1.3;
+  }
+  .pick-cell .pc-label i{
+    display: block;
+    color: var(--muted);
+    font-size: 10.5px;
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .pick-cell.wrong{
+    opacity: 0.28;
+    pointer-events: none;
+    border-color: var(--line);
+  }
+  .pick-cell.wrong .pc-label{ color: var(--muted); }
+  .pick-cell.correct{
+    opacity: 1;
+    border-color: #22c55e;
+    box-shadow: 0 0 0 1px #22c55e;
+  }
+  .pick-cell.correct .pc-label{ color: #3ddc84; }
+  .pick-cell.correct .pc-label i{ color: #3ddc84; }
+  .pick-cell:disabled:not(.wrong):not(.correct){ pointer-events: none; }
+  .pick-foot{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px 16px;
+    border-top: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .pick-progress{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .pick-progress b{ color: var(--gold); }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <p class="brand-eyebrow" id="cladeLabel">Field ID · Aves</p>
+      <h1 class="brand">Field <em>ID</em></h1>
+      <p class="subtitle">A photo, no name attached. Guess the bird — genus, family, or a common name all score partial credit the closer you get.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="num" id="statTotal">0</span><span class="lbl">Score</span></div>
+      <div class="stat"><span class="num" id="statRounds">0</span><span class="lbl">Birds</span></div>
+      <div class="stat"><span class="num" id="statAvg">–</span><span class="lbl">Avg</span></div>
+    </div>
+  </header>
+
+  <div class="region-row">
+    <label for="regionSelect">Region</label>
+    <select id="regionSelect">
+      <option value="">🌍 Everywhere</option>
+    </select>
+    <span class="region-status" id="regionStatus"></span>
+  </div>
+
+  <div class="difficulty-row">
+    <label for="difficultySlider">Difficulty</label>
+    <span class="diff-end">Common</span>
+    <input type="range" id="difficultySlider" min="0" max="100" step="1" value="50">
+    <span class="diff-end">Rare</span>
+    <span class="diff-label" id="difficultyLabel">Balanced mix</span>
+  </div>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <main class="grid">
+    <div class="left-col">
+      <div class="card photo-card">
+        <div class="photo-frame" id="photoFrame">
+          <div class="skeleton" id="skeleton"></div>
+        </div>
+        <div class="photo-credit">
+          <span id="creditText">Loading observation from iNaturalist…</span>
+          <a id="creditLink" href="#" target="_blank" rel="noopener">view on iNaturalist ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="card guess-panel">
+        <h2>Your guess</h2>
+        <div class="guess-row">
+          <input type="text" id="guessInput" placeholder="e.g. honeyeater, Acanthiza, Yellow-rumped Thornbill…" autocomplete="off" disabled>
+          <button class="primary" id="guessBtn" disabled>Guess</button>
+        </div>
+        <div class="panel-foot">
+          <span class="hint" id="hintText">Common name, scientific name, family, genus, etc.</span>
+          <div style="display:flex; gap:8px;">
+            <button class="ghost" id="pickBtn" disabled>Pick me</button>
+            <button class="ghost" id="giveUpBtn" disabled>Reveal answer</button>
+            <button id="nextBtn" disabled>Next bird →</button>
+          </div>
+        </div>
+        <ul class="feed" id="feed"></ul>
+      </div>
+
+      <div class="card ladder-card">
+        <h2>Taxonomic ladder</h2>
+        <div class="best-line" id="bestLine">Make a guess to start climbing.</div>
+        <div class="ladder" id="ladder"></div>
+        <div class="reveal-box" id="revealBox"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="pick-overlay" id="pickOverlay">
+    <div class="pick-modal">
+      <div class="pick-head">
+        <div class="pick-head-text">
+          <p class="pk-eyebrow" id="pickEyebrow">Multiple choice</p>
+          <h3 id="pickTitle">Pick the family</h3>
+        </div>
+        <button class="pick-close" id="pickCloseBtn" aria-label="Close">✕</button>
+      </div>
+      <div class="pick-main">
+        <div class="pick-photo">
+          <img id="pickPhotoImg" src="" alt="Mystery bird observation" tabindex="0">
+        </div>
+        <div class="pick-body" id="pickBody">
+          <div class="pick-status">Gathering candidates…</div>
+        </div>
+      </div>
+      <div class="pick-foot">
+        <span class="pick-progress" id="pickProgress"></span>
+        <button class="ghost" id="pickRevealBtn">Reveal answer</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="credits">
+    Photos &amp; taxonomy from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> observations, used under their respective licenses · inspired by <a href="https://simonrolph.github.io/iNatGuessr/" target="_blank" rel="noopener">iNatGuessr</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const API = "https://api.inaturalist.org/v1";
+  const params = new URLSearchParams(location.search);
+  const CLADE_ID = params.get("taxon_id") || "3"; // 3 = Aves (birds)
+  let placeId = params.get("place_id") || null;
+
+  const REGIONS = [
+    { label: "🌍 Everywhere", q: null },
+    { label: "North America", q: "North America" },
+    { label: "South America", q: "South America" },
+    { label: "Europe", q: "Europe" },
+    { label: "Africa", q: "Africa" },
+    { label: "Asia", q: "Asia" },
+    { label: "Oceania", q: "Oceania" },
+    { label: "Australia", q: "Australia" },
+    { label: "United States", q: "United States" },
+    { label: "Canada", q: "Canada" },
+    { label: "United Kingdom", q: "United Kingdom" },
+    { label: "Mexico", q: "Mexico" },
+    { label: "Brazil", q: "Brazil" },
+    { label: "India", q: "India" },
+    { label: "Japan", q: "Japan" },
+    { label: "New Zealand", q: "New Zealand" },
+    { label: "South Africa", q: "South Africa" },
+  ];
+  const placeIdCache = {};
+
+  const RANKS = ["kingdom","phylum","class","order","family","genus","species"];
+  const RANK_LABELS = { kingdom:"Kingdom", phylum:"Phylum", class:"Class", order:"Order", family:"Family", genus:"Genus", species:"Species" };
+  const WEIGHTS = { kingdom:2, phylum:3, class:5, order:15, family:25, genus:25, species:25 };
+  const CUM = (() => {
+    let running = 0, out = {};
+    RANKS.forEach(r => { running += WEIGHTS[r]; out[r] = running; });
+    return out;
+  })();
+
+  // ---------- state ----------
+  let state = null;
+
+  const el = {
+    photoCard: document.querySelector(".photo-card"),
+    photoFrame: document.getElementById("photoFrame"),
+    skeleton: document.getElementById("skeleton"),
+    creditText: document.getElementById("creditText"),
+    creditLink: document.getElementById("creditLink"),
+    guessInput: document.getElementById("guessInput"),
+    guessBtn: document.getElementById("guessBtn"),
+    pickBtn: document.getElementById("pickBtn"),
+    giveUpBtn: document.getElementById("giveUpBtn"),
+    nextBtn: document.getElementById("nextBtn"),
+    pickOverlay: document.getElementById("pickOverlay"),
+    pickPhotoImg: document.getElementById("pickPhotoImg"),
+    pickTitle: document.getElementById("pickTitle"),
+    pickEyebrow: document.getElementById("pickEyebrow"),
+    pickBody: document.getElementById("pickBody"),
+    pickProgress: document.getElementById("pickProgress"),
+    pickCloseBtn: document.getElementById("pickCloseBtn"),
+    pickRevealBtn: document.getElementById("pickRevealBtn"),
+    feed: document.getElementById("feed"),
+    ladder: document.getElementById("ladder"),
+    bestLine: document.getElementById("bestLine"),
+    revealBox: document.getElementById("revealBox"),
+    statTotal: document.getElementById("statTotal"),
+    statRounds: document.getElementById("statRounds"),
+    statAvg: document.getElementById("statAvg"),
+    errBanner: document.getElementById("errBanner"),
+    cladeLabel: document.getElementById("cladeLabel"),
+    hintText: document.getElementById("hintText"),
+    regionSelect: document.getElementById("regionSelect"),
+    regionStatus: document.getElementById("regionStatus"),
+    difficultySlider: document.getElementById("difficultySlider"),
+    difficultyLabel: document.getElementById("difficultyLabel"),
+  };
+
+  // difficulty: 0 = easiest (bias toward commonly-observed species), 100 =
+  // hardest (bias toward rarely-observed species), 50 = no bias either way.
+  let difficulty = Number(el.difficultySlider.value) || 50;
+  const speciesPoolCache = {};
+
+  let totalScore = 0, roundsPlayed = 0;
+
+  function showError(msg){
+    el.errBanner.textContent = msg;
+    el.errBanner.classList.add("show");
+  }
+  function clearError(){ el.errBanner.classList.remove("show"); }
+
+  function rnd(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr){ return arr[rnd(0, arr.length - 1)]; }
+
+  async function fetchJSON(url){
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("Request failed (" + res.status + ")");
+    return res.json();
+  }
+
+  // ---------- fetching a random bird observation ----------
+
+  // The original approach: grab a shuffled page of research-grade observations
+  // for the whole clade and pick one at random, with no regard for how common
+  // the species is. Used directly when difficulty is neutral (50), and as a
+  // fallback whenever the difficulty-weighted species pool can't be built or
+  // comes up empty.
+  async function fetchRandomObservationUniform(attempt){
+    attempt = attempt || 0;
+    const orderBys = ["votes","observed_on","created_at","id","random"];
+    const maxPage = attempt < 2 ? 45 : 10;
+    const page = rnd(1, maxPage);
+    const qs = new URLSearchParams({
+      taxon_id: CLADE_ID,
+      photos: "true",
+      quality_grade: "research",
+      per_page: "30",
+      page: String(page),
+      order_by: pick(orderBys),
+      order: pick(["desc","asc"]),
+    });
+    if(placeId) qs.set("place_id", placeId);
+    const data = await fetchJSON(`${API}/observations?${qs.toString()}`);
+    const results = (data.results || []).filter(o =>
+      o.taxon && o.photos && o.photos.length > 0 &&
+      (attempt >= 3 || o.taxon.rank === "species")
+    );
+    if(results.length === 0){
+      if(attempt >= 6) throw new Error("Couldn't find any observations for this clade.");
+      return fetchRandomObservationUniform(attempt + 1);
+    }
+    return pick(results);
+  }
+
+  // Fetches the pool of species observed within the current clade/region, each
+  // tagged with how many research-grade observations it has — the commonness
+  // signal the difficulty slider biases against. Cached per clade+region since
+  // it doesn't change round to round.
+  async function fetchSpeciesPool(){
+    const cacheKey = `${CLADE_ID}:${placeId || ""}`;
+    if(speciesPoolCache[cacheKey]) return speciesPoolCache[cacheKey];
+    const qs = new URLSearchParams({
+      taxon_id: CLADE_ID,
+      photos: "true",
+      quality_grade: "research",
+      hrank: "species",
+      lrank: "species",
+      per_page: "500",
+    });
+    if(placeId) qs.set("place_id", placeId);
+    const data = await fetchJSON(`${API}/observations/species_counts?${qs.toString()}`);
+    const pool = (data.results || []).filter(r => r.taxon && r.count > 0);
+    speciesPoolCache[cacheKey] = pool;
+    return pool;
+  }
+
+  // Weighted pick over the species pool. diff 0 = strongly favor high-count
+  // (common) species; diff 100 = strongly favor low-count (rare) species;
+  // diff 50 = uniform, ignoring count entirely — the midpoint is a deliberate
+  // "no bias" setting, not just an average of the two extremes.
+  function pickWeightedSpecies(pool, diff){
+    const k = (50 - diff) / 50; // +1 .. 0 .. -1
+    const weights = pool.map(r => Math.pow(Math.max(r.count, 1), k));
+    const total = weights.reduce((a, b) => a + b, 0);
+    if(!(total > 0)) return pick(pool);
+    let r = Math.random() * total;
+    for(let i = 0; i < pool.length; i++){
+      r -= weights[i];
+      if(r <= 0) return pool[i];
+    }
+    return pool[pool.length - 1];
+  }
+
+  async function fetchObservationsForTaxon(taxonId){
+    const qs = new URLSearchParams({
+      taxon_id: String(taxonId),
+      photos: "true",
+      quality_grade: "research",
+      per_page: "30",
+      order_by: pick(["votes", "observed_on", "created_at", "id"]),
+      order: pick(["desc", "asc"]),
+    });
+    if(placeId) qs.set("place_id", placeId);
+    const data = await fetchJSON(`${API}/observations?${qs.toString()}`);
+    return (data.results || []).filter(o => o.taxon && o.photos && o.photos.length > 0);
+  }
+
+  async function fetchRandomObservation(attempt){
+    attempt = attempt || 0;
+    if(difficulty === 50) return fetchRandomObservationUniform();
+
+    try{
+      const pool = await fetchSpeciesPool();
+      if(!pool.length) return fetchRandomObservationUniform();
+
+      const tried = new Set();
+      const maxTries = Math.min(5, pool.length);
+      for(let i = 0; i < maxTries; i++){
+        const candidate = pickWeightedSpecies(pool, difficulty);
+        if(tried.has(candidate.taxon.id)) continue;
+        tried.add(candidate.taxon.id);
+        const results = await fetchObservationsForTaxon(candidate.taxon.id);
+        if(results.length) return pick(results);
+      }
+      // Every weighted pick came up dry (e.g. photos got removed since the
+      // pool was cached) — fall back rather than fail the round.
+      return fetchRandomObservationUniform();
+    }catch(e){
+      console.error(e);
+      return fetchRandomObservationUniform();
+    }
+  }
+
+  async function fetchTaxonDetail(taxonId){
+    const data = await fetchJSON(`${API}/taxa/${taxonId}`);
+    if(!data.results || !data.results.length) throw new Error("Taxon lookup failed.");
+    return data.results[0];
+  }
+
+  // Robustly constructs the 7-rank chain in canonical order
+  function buildChain(taxonDetail){
+    const all = (taxonDetail.ancestors || []).concat(taxonDetail).map(a => ({
+      id: a.id, name: a.name, rank: a.rank, common: a.preferred_common_name || null
+    }));
+    const map = new Map();
+    all.forEach(item => {
+      if(RANKS.includes(item.rank) && !map.has(item.rank)){
+        map.set(item.rank, item);
+      }
+    });
+    return RANKS.map(r => map.get(r)).filter(Boolean);
+  }
+
+  // Same dedup as buildChain but keeps the full taxon objects (with
+  // default_photo, preferred_common_name, etc.) so the pick-me grid can show
+  // a real photo for the correct answer without an extra API round trip.
+  function buildFullByRank(taxonDetail){
+    const all = (taxonDetail.ancestors || []).concat(taxonDetail);
+    const map = {};
+    all.forEach(item => {
+      if(RANKS.includes(item.rank) && !map[item.rank]) map[item.rank] = item;
+    });
+    return map;
+  }
+
+  function photoUrl(obs){
+    const p = obs.photos && obs.photos[0];
+    if(!p) return null;
+    let url = p.url || p.medium_url || p.large_url;
+    if(!url) return null;
+    return url.replace(/square\.(jpg|jpeg|png|gif)/i, "large.$1");
+  }
+
+  // ---------- round lifecycle ----------
+  async function loadNewRound(){
+    clearError();
+    resetPanel();
+    setLoading(true);
+    try{
+      const obs = await fetchRandomObservation();
+      const detail = await fetchTaxonDetail(obs.taxon.id);
+      const chain = buildChain(detail);
+      if(chain.length < 2) throw new Error("Incomplete taxonomy, trying another…");
+
+      state = {
+        obs, detail, chain,
+        fullByRank: buildFullByRank(detail),
+        bestIdx: -1,
+        revealIdx: -1,
+        bestScore: 0,
+        guesses: 0,
+        finished: false,
+      };
+
+      renderPhoto(obs);
+      renderLadder();
+      el.feed.innerHTML = "";
+      el.bestLine.textContent = "Make a guess to start climbing.";
+      el.revealBox.classList.remove("show");
+      setLoading(false);
+    }catch(e){
+      console.error(e);
+      showError("Trouble reaching iNaturalist — " + e.message + " Trying again…");
+      setTimeout(loadNewRound, 1200);
+    }
+  }
+
+  function resetPanel(){
+    el.guessInput.value = "";
+    el.guessInput.disabled = true;
+    el.guessBtn.disabled = true;
+    el.pickBtn.disabled = true;
+    el.giveUpBtn.disabled = true;
+    el.nextBtn.disabled = true;
+    el.nextBtn.textContent = "Next bird →";
+    el.photoCard.classList.remove("revealed");
+  }
+
+  function setLoading(isLoading){
+    if(isLoading){
+      el.skeleton.style.display = "block";
+      el.creditText.textContent = "Loading observation from iNaturalist…";
+    } else {
+      el.skeleton.style.display = "none";
+      el.guessInput.disabled = false;
+      el.guessBtn.disabled = false;
+      el.pickBtn.disabled = false;
+      el.giveUpBtn.disabled = false;
+      el.guessInput.focus();
+    }
+  }
+
+  function renderPhoto(obs){
+    const url = photoUrl(obs);
+    el.photoFrame.innerHTML = '<div class="skeleton" id="skeleton"></div>';
+    const img = new Image();
+    img.alt = "Mystery bird observation";
+    img.onload = () => {
+      el.photoFrame.innerHTML = "";
+      el.photoFrame.appendChild(img);
+    };
+    img.onerror = () => {
+      loadNewRound();
+    };
+    img.src = url;
+
+    const login = (obs.user && (obs.user.name || obs.user.login)) || "unknown observer";
+    const license = (obs.photos[0] && obs.photos[0].license_code) ? obs.photos[0].license_code.toUpperCase() : "© all rights reserved";
+    el.creditText.textContent = `Observed by ${login} · ${license}`;
+    el.creditLink.href = obs.uri || `https://www.inaturalist.org/observations/${obs.id}`;
+  }
+
+  function renderLadder(){
+    el.ladder.innerHTML = "";
+    state.chain.forEach((node, i) => {
+      const div = document.createElement("div");
+      div.className = "rung";
+      div.dataset.idx = i;
+      div.innerHTML = `
+        <div class="rung-marker"><span class="dot"></span><span class="tick"></span></div>
+        <div class="rung-body">
+          <span class="rk-label">${RANK_LABELS[node.rank] || node.rank}</span>
+          <div class="rung-top">
+            <span class="rk-name">••••••••</span>
+            <span class="rk-flag">revealed</span>
+          </div>
+          <span class="rk-common"></span>
+        </div>
+      `;
+      el.ladder.appendChild(div);
+    });
+  }
+
+  function updateLadderReveal(prevRevealIdx){
+    const rungs = el.ladder.querySelectorAll(".rung");
+    rungs.forEach((rung, i) => {
+      const node = state.chain[i];
+      if(!node) return;
+      if(i <= state.revealIdx){
+        const guessed = i <= state.bestIdx;
+        rung.classList.add("revealed");
+        rung.classList.toggle("auto", !guessed);
+        rung.querySelector(".rk-name").textContent = node.name;
+        rung.querySelector(".rk-common").textContent = node.common ? node.common : "";
+      }
+    });
+    if(state.bestIdx >= 0 && state.chain[state.bestIdx]){
+      const node = state.chain[state.bestIdx];
+      el.bestLine.innerHTML = `You reached: <b>${RANK_LABELS[node.rank] || node.rank}</b> — ${node.common ? node.common + " · " : ""}<i>${node.name}</i>`;
+    } else {
+      el.bestLine.textContent = "Make a guess to start climbing.";
+    }
+  }
+
+  // ---------- taxon resolution + scoring ----------
+  function normalizeToken(s){
+    s = (s || "").toLowerCase();
+    if(s.length > 3 && s.endsWith("s")) s = s.slice(0, -1);
+    return s;
+  }
+  function tokenize(name){
+    return (name || "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  }
+  function containsSubsequence(tokens, sub){
+    for(let i = 0; i + sub.length <= tokens.length; i++){
+      if(sub.every((s, j) => tokens[i + j] === s)) return true;
+    }
+    return false;
+  }
+  // Ranks a guess is unlikely to nail with just a bare generic word ("cormorant",
+  // "wren") — English group names for family/order are usually just the plain plural,
+  // while genus/species names pair that same word with a real distinguishing
+  // modifier ("Great Cormorant", "Typical Old World Cormorants"). Treating a lone-word
+  // hit on these ranks as weaker keeps a guess like "cormorant" pointed at the family
+  // instead of an incidental genus or species that merely shares the word.
+  const FINE_RANKS = new Set(["genus", "subgenus", "species", "hybrid", "complex", "subspecies", "variety", "form"]);
+
+  // Rank specificity for tiebreaking, low = more specific. Prefers taxon.rank_level
+  // (as returned by the API) and falls back to position in RANKS for anything missing it.
+  function rankLevelOf(taxon){
+    if(typeof taxon.rank_level === "number") return taxon.rank_level;
+    const idx = RANKS.indexOf(taxon.rank);
+    return idx >= 0 ? (RANKS.length - idx) * 10 : 999;
+  }
+
+  function matchTier(query, taxon){
+    const q = query.trim().toLowerCase();
+    const common = (taxon.preferred_common_name || "").toLowerCase();
+    const sci = (taxon.name || "").toLowerCase();
+    if(common === q || sci === q) return 0;
+
+    const qTokens = tokenize(query).map(normalizeToken);
+    const commonTokens = tokenize(taxon.preferred_common_name).map(normalizeToken);
+    const sciTokens = tokenize(taxon.name).map(normalizeToken);
+    const qNorm = qTokens.join(" ");
+    if(!qTokens.length) return 7;
+
+    if(qNorm && (commonTokens.join(" ") === qNorm || sciTokens.join(" ") === qNorm)) return 0;
+
+    // The guessed words all appear as a contiguous run inside a *longer* name
+    // ("rainbow lorikeet" inside "Rainbow Lorikeets and Allies"). Close, but this
+    // taxon's real name has extra words the guess didn't account for, so it must
+    // rank below a true tier-0 identity match found elsewhere among the candidates.
+    if(qTokens.length > 1 && containsSubsequence(commonTokens, qTokens)) return 1;
+
+    // How many guessed words land as exact whole words in this taxon's name? Using
+    // "any token hit" rather than "the whole query is one token" also lets a guess
+    // with a typo'd modifier ("greater cormorant") still connect on its head noun.
+    const commonHits = qTokens.filter(t => commonTokens.includes(t)).length;
+    const sciHits = qTokens.filter(t => sciTokens.includes(t)).length;
+
+    if(commonHits) return FINE_RANKS.has(taxon.rank) ? 3 : 2;
+    if(sciHits) return 4;
+
+    if(common.startsWith(q) || sci.startsWith(q)) return 5;
+    if(common.includes(q) || sci.includes(q)) return 6;
+    return 7;
+  }
+
+  async function searchTaxa(q, cladeId){
+    const qs = new URLSearchParams({ q, is_active: "true", per_page: "20" });
+    if(cladeId) qs.set("taxon_id", cladeId);
+    const data = await fetchJSON(`${API}/taxa/autocomplete?${qs.toString()}`);
+    return data.results || [];
+  }
+
+  // Builds progressively simpler versions of the query to retry if the full phrase
+  // finds nothing — e.g. "greater cormorant" (typo'd modifier) falls back to trying
+  // just "cormorant", the word actually likely to match something.
+  function buildQueryAttempts(query){
+    const words = query.trim().split(/\s+/).filter(Boolean);
+    const attempts = [query.trim()];
+    for(let i = 1; i < words.length; i++) attempts.push(words.slice(i).join(" "));
+    if(words.length > 1) attempts.push(words[words.length - 1]);
+    return [...new Set(attempts.filter(Boolean))];
+  }
+
+  // Wraps a chain node ({id, name, rank, common}) in the shape matchTier expects.
+  function chainNodeAsTaxon(node){
+    return { name: node.name, preferred_common_name: node.common, rank: node.rank };
+  }
+
+  // Checks the guess directly against THIS round's own species/genus/family/…
+  // chain before ever hitting the external search. This is the fix for guesses
+  // like "wood duck" on an Australian Wood Duck: the external taxa search finds
+  // an exact-text match on the unrelated Northern-Hemisphere "Wood Duck" (Aix
+  // sponsa) at a better tier than the true answer gets for merely containing the
+  // phrase — so relying on search results alone, even with lineage tiebreaking,
+  // still loses to that unrelated exact match. Testing the chain directly sidesteps
+  // that: a guess that exactly or cleanly names something in the real answer's own
+  // lineage IS what's being asked for, full stop, regardless of what else that
+  // text happens to match globally. Only short-circuits on a strong match
+  // (tier 0 exact, or tier 1 clean phrase-containment); looser hits (a lone shared
+  // word, a prefix, etc.) fall through to the normal search-based resolution so
+  // legitimately wrong guesses still get resolved and scored as such.
+  function resolveAgainstChain(query){
+    if(!state || !state.chain || !state.chain.length) return null;
+    let bestNode = null, bestTier = Infinity, bestIdx = -1;
+    state.chain.forEach((node, i) => {
+      const tier = matchTier(query, chainNodeAsTaxon(node));
+      if(tier < bestTier || (tier === bestTier && i > bestIdx)){
+        bestTier = tier;
+        bestNode = node;
+        bestIdx = i;
+      }
+    });
+    if(bestNode && bestTier <= 1){
+      return { id: bestNode.id, name: bestNode.name, preferred_common_name: bestNode.common, rank: bestNode.rank, ancestor_ids: [] };
+    }
+    return null;
+  }
+
+  async function resolveGuess(query){
+    const chainMatch = resolveAgainstChain(query);
+    if(chainMatch) return chainMatch;
+
+    const cladeIdNum = Number(CLADE_ID);
+    const attempts = buildQueryAttempts(query);
+    let results = [];
+    for(const attempt of attempts){
+      results = await searchTaxa(attempt, CLADE_ID);
+      if(results.length) break;
+      results = await searchTaxa(attempt, null);
+      if(results.length) break;
+    }
+    if(!results.length) return null;
+
+    // Tiebreak prefers, in order: (1) the current round's actual lineage over an
+    // unrelated same-tier candidate — e.g. a guess of "magpie" should resolve
+    // toward this round's own Australian Magpie/Gymnorhina rather than an
+    // unrelated Magpie Goose that merely shares the word — and among candidates
+    // that DO sit on the current lineage, the deepest (most specific) one wins,
+    // so a guess that could name either a sibling species or the exact species
+    // being shown lands on the exact one; (2) the MORE SPECIFIC taxon (lower
+    // rank_level) when nothing distinguishes candidates via the round's lineage.
+    const chain = state ? state.chain : null;
+    const ranked = results
+      .map((t, i) => ({ t, tier: matchTier(query, t), i, chainIdx: chain ? computeMatchIdx(chain, t) : -1 }))
+      .sort((a, b) => a.tier - b.tier || b.chainIdx - a.chainIdx || rankLevelOf(a.t) - rankLevelOf(b.t) || a.i - b.i);
+
+    const inClade = t => t.id === cladeIdNum || (t.ancestor_ids || []).includes(cladeIdNum);
+    const best = ranked.find(r => inClade(r.t)) || ranked[0];
+    return best ? best.t : null;
+  }
+
+  function computeMatchIdx(chain, guessTaxon){
+    if(!guessTaxon) return -1;
+    const guessIds = new Set(guessTaxon.ancestor_ids || []);
+    guessIds.add(guessTaxon.id);
+    let idx = -1;
+    for(let i = 0; i < chain.length; i++){
+      if(guessIds.has(chain[i].id)) idx = i;
+    }
+    return idx;
+  }
+
+  function scoreForIdx(idx){
+    if(idx < 0 || idx >= state.chain.length) return 0;
+    const rank = state.chain[idx].rank;
+    return CUM[rank] || 0;
+  }
+
+  function feedbackFor(idx, exactSpecies){
+    if(idx < 0) return { text:"Not even the same kingdom.", cls:"s-none" };
+    const node = state.chain[idx];
+    const rank = node ? node.rank : RANKS[idx];
+    if(rank === "species") return exactSpecies
+      ? { text:"Exact species.", cls:"s-100" }
+      : { text:"Correct species.", cls:"s-100" };
+    if(rank === "genus") return { text:"Correct genus.", cls:"s-hi" };
+    if(rank === "family") return { text:"Correct family.", cls:"s-hi" };
+    if(rank === "order") return { text:"Correct order.", cls:"s-mid" };
+    if(rank === "class") return { text:"Correct class only.", cls:"s-lo" };
+    return { text:"Barely related.", cls:"s-lo" };
+  }
+
+  function findNameEcho(query, chain){
+    const qTokens = tokenize(query).map(normalizeToken);
+    if(qTokens.length !== 1) return null;
+    const q = qTokens[0];
+    if(!q || q.length < 3) return null;
+    for(let i = chain.length - 1; i >= 0; i--){
+      const common = chain[i].common;
+      if(!common) continue;
+      const words = common.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+      for(const w of words){
+        const nw = normalizeToken(w);
+        if(nw === q) continue;
+        if(nw.length > q.length && (nw.endsWith(q) || nw.startsWith(q))){
+          return { node: chain[i], word: w };
+        }
+      }
+    }
+    return null;
+  }
+
+  // Finds a word shared between the guess and the true species' common name that
+  // isn't already accounted for by the rank the guess landed on — e.g. guessing
+  // "white-eyed heron" for a White-faced Heron only reaches family level ("heron"
+  // is shared with the family name too), but "white" is a distinguishing word the
+  // guess got right that the family-level match doesn't capture on its own.
+  function findSpeciesWordOverlap(query, speciesNode, achievedNode){
+    if(!speciesNode || !speciesNode.common) return null;
+    const qTokensArr = tokenize(query).map(normalizeToken).filter(w => w.length > 2);
+    if(!qTokensArr.length) return null;
+    const qTokens = new Set(qTokensArr);
+    const achievedTokens = tokenize(achievedNode && achievedNode.common ? achievedNode.common : "").map(normalizeToken);
+    const achievedSet = new Set(achievedTokens);
+    const targetTokens = tokenize(speciesNode.common).map(normalizeToken);
+
+    // Prefer surfacing the whole guessed phrase when it runs contiguously inside
+    // the true species' name — e.g. guessing "wood duck" should point at "wood
+    // duck" as a phrase, not just the single word "wood".
+    if(qTokensArr.length > 1 && containsSubsequence(targetTokens, qTokensArr) && !containsSubsequence(achievedTokens, qTokensArr)){
+      return qTokensArr.join(" ");
+    }
+
+    for(const w of targetTokens){
+      if(qTokens.has(w) && !achievedSet.has(w)) return w;
+    }
+    return null;
+  }
+
+  function addFeedItem(query, guessTaxon, idx, score){
+    const li = document.createElement("li");
+    const isExactSpecies = guessTaxon && idx === state.chain.length - 1 && guessTaxon.id === state.detail.id;
+    let fb = feedbackFor(idx, isExactSpecies);
+    if(idx < 0){
+      const echo = findNameEcho(query, state.chain);
+      if(echo){
+        fb = {
+          text: `Not a taxonomic match — but "${echo.word}" appears in the name of its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).`,
+          cls: "s-echo"
+        };
+      }
+    } else if(!isExactSpecies){
+      const speciesNode = state.chain[state.chain.length - 1];
+      const overlapWord = findSpeciesWordOverlap(query, speciesNode, state.chain[idx]);
+      if(overlapWord){
+        fb = { text: `${fb.text} Close — the species name contains "${overlapWord}".`, cls: fb.cls };
+      }
+    }
+    li.className = fb.cls;
+    const commonBit = guessTaxon
+      ? `→ <b>${guessTaxon.preferred_common_name || guessTaxon.name}</b> <i>(${guessTaxon.name})</i> · ${fb.text}`
+      : `→ no matching taxon found, try a different name`;
+    li.innerHTML = `<span class="fq">"${query}"</span><span class="fm">${commonBit}</span><span class="fs">${score > 0 ? "+" + score : "—"}</span>`;
+    el.feed.prepend(li);
+  }
+
+  async function submitGuess(){
+    const query = el.guessInput.value.trim();
+    if(!query || !state || state.finished) return;
+    el.guessBtn.disabled = true;
+    el.guessInput.disabled = true;
+    el.pickBtn.disabled = true;
+    clearError();
+    try{
+      const guessTaxon = await resolveGuess(query);
+      const prevRevealIdx = state.revealIdx;
+      let idx = -1, score = 0;
+      if(guessTaxon){
+        idx = computeMatchIdx(state.chain, guessTaxon);
+        score = scoreForIdx(idx);
+      }
+      state.guesses += 1;
+      if(idx > state.bestIdx){
+        state.bestIdx = idx;
+        state.bestScore = score;
+        state.revealIdx = idx;
+      }
+      addFeedItem(query, guessTaxon, idx, score);
+      updateLadderReveal(prevRevealIdx);
+
+      // idx reaching the species position already proves the guess is correct —
+      // computeMatchIdx only gets there if the resolved taxon IS the species or
+      // is more specific than it (a subspecies whose ancestry passes through the
+      // species), so no extra id-equality check is needed. That extra check was
+      // the actual bug: it silently required the API to resolve the guess to the
+      // bare species rather than any infraspecific taxon below it (e.g. "swamphen"
+      // resolving to the subspecies Porphyrio melanotus melanotus), which is a
+      // completely normal, correct resolution that kept failing this check and
+      // leaving the round stuck.
+      const isSpeciesMatch = idx === state.chain.length - 1;
+      if(isSpeciesMatch){
+        finishRound(true);
+      }
+    }catch(e){
+      console.error(e);
+      showError("Couldn't look up that guess — check your connection and try again.");
+    }finally{
+      el.guessInput.value = "";
+      if(state && !state.finished){
+        el.guessBtn.disabled = false;
+        el.guessInput.disabled = false;
+        el.pickBtn.disabled = false;
+        el.guessInput.focus();
+      }
+    }
+  }
+
+  function stripHtml(html){
+    const div = document.createElement("div");
+    div.innerHTML = html || "";
+    return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
+  }
+
+  function truncate(text, max){
+    if(text.length <= max) return text;
+    const cut = text.slice(0, max);
+    return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+  }
+
+  async function fetchSimilarSpecies(detail){
+    const genusNode = detail.rank === "genus" ? detail : (detail.ancestors || []).find(a => a.rank === "genus");
+    if(!genusNode) return [];
+    try{
+      const data = await fetchJSON(`${API}/taxa/${genusNode.id}`);
+      const genusDetail = data.results && data.results[0];
+      if(!genusDetail || !genusDetail.children) return [];
+      return genusDetail.children
+        .filter(c => c.id !== detail.id && c.rank === "species")
+        .sort((a, b) => (b.observations_count || 0) - (a.observations_count || 0))
+        .slice(0, 6);
+    }catch(e){
+      console.error(e);
+      return [];
+    }
+  }
+
+  async function fetchGalleryPhotos(detail, primaryObsId){
+    const fromTaxon = (detail.taxon_photos || [])
+      .map(tp => tp.photo)
+      .filter(p => p && (p.medium_url || p.url));
+
+    if(fromTaxon.length >= 4) return fromTaxon.slice(0, 8);
+
+    try{
+      const qs = new URLSearchParams({
+        taxon_id: String(detail.id), photos: "true", quality_grade: "research",
+        per_page: "12", order_by: "votes", order: "desc"
+      });
+      const data = await fetchJSON(`${API}/observations?${qs.toString()}`);
+      const extra = (data.results || [])
+        .filter(o => o.id !== primaryObsId && o.photos && o.photos.length)
+        .map(o => o.photos[0]);
+      const seen = new Set();
+      return fromTaxon.concat(extra).filter(p => {
+        const key = p.id || p.url || p.medium_url;
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 8);
+    }catch(e){
+      console.error(e);
+      return fromTaxon;
+    }
+  }
+
+  function renderRevealDetails(state, solved){
+    const detail = state.detail;
+    const photo = detail.default_photo;
+
+    const headline = photo
+      ? `<div class="reveal-headline">
+          <img class="rh-photo" src="${(photo.medium_url || photo.square_url || '').replace(/"/g, '&quot;')}" alt="">
+          <div class="rh-name">${detail.preferred_common_name || detail.name}</div>
+          <div class="rh-sci">${detail.name}</div>
+          <div class="rh-credit">${photo.attribution || ""}</div>
+        </div>`
+      : `<div class="reveal-headline"><div class="rh-name">${detail.preferred_common_name || detail.name}</div></div>`;
+
+    const aboutText = detail.wikipedia_summary ? truncate(stripHtml(detail.wikipedia_summary), 420) : "";
+    const about = aboutText
+      ? `<div class="reveal-section">
+          <h3>About</h3>
+          <div class="reveal-about">${aboutText}${detail.wikipedia_url ? ` <a href="${detail.wikipedia_url}" target="_blank" rel="noopener">Wikipedia ↗</a>` : ""}</div>
+        </div>`
+      : "";
+
+    el.revealBox.innerHTML = `
+      <div class="reveal-score">${solved
+        ? `Solved in ${state.guesses} guess${state.guesses === 1 ? "" : "es"} · scored <b>${state.bestScore}</b> pts.`
+        : `You scored <b>${state.bestScore}</b> pts.`
+      } <a href="${state.obs.uri}" target="_blank" rel="noopener">View this observation ↗</a></div>
+      ${headline}
+      <div class="reveal-section" id="morePhotosSection"></div>
+      ${about}
+      <div class="reveal-section" id="similarSection">
+        <h3>Often confused with</h3>
+        <div class="reveal-note">Looking up other species in the same genus…</div>
+      </div>
+    `;
+
+    fetchGalleryPhotos(detail, state.obs.id).then(photos => {
+      const section = document.getElementById("morePhotosSection");
+      if(!section) return;
+      if(!photos.length) return;
+      const imgs = photos.map(p => {
+        const thumb = (p.small_url || p.medium_url || p.square_url || p.url || "").replace(/"/g, "&quot;");
+        return `<img src="${thumb}" alt="" loading="lazy">`;
+      }).join("");
+      section.innerHTML = `<h3>More photos of this species</h3><div class="more-photos-grid">${imgs}</div>`;
+    });
+
+    fetchSimilarSpecies(detail).then(similar => {
+      const section = document.getElementById("similarSection");
+      if(!section) return;
+      if(!similar.length){
+        section.innerHTML = `<h3>Often confused with</h3><div class="reveal-note">No close relatives on record for this genus.</div>`;
+        return;
+      }
+      const cards = similar.map(s => {
+        const p = s.default_photo;
+        const thumb = p ? (p.small_url || p.medium_url || p.square_url || p.url) : "";
+        const img = thumb ? `<img src="${thumb.replace(/"/g, '&quot;')}" alt="" loading="lazy">` : "";
+        return `<a class="similar-card" href="https://www.inaturalist.org/taxa/${s.id}" target="_blank" rel="noopener">
+          ${img}
+          <div class="sc-label">${s.preferred_common_name || s.name}<i>${s.name}</i></div>
+        </a>`;
+      }).join("");
+      section.innerHTML = `<h3>Often confused with</h3><div class="similar-grid">${cards}</div>`;
+    });
+  }
+
+  function finishRound(solved){
+    if(!state || state.finished) return;
+    state.finished = true;
+    totalScore += state.bestScore;
+    roundsPlayed += 1;
+    el.statTotal.textContent = totalScore;
+    el.statRounds.textContent = roundsPlayed;
+    el.statAvg.textContent = Math.round(totalScore / roundsPlayed);
+
+    const prevRevealIdx = state.revealIdx;
+    state.revealIdx = state.chain.length - 1;
+    updateLadderReveal(prevRevealIdx);
+
+    el.revealBox.classList.add("show");
+    renderRevealDetails(state, solved);
+
+    el.photoCard.classList.add("revealed");
+
+    el.guessInput.disabled = true;
+    el.guessBtn.disabled = true;
+    el.pickBtn.disabled = true;
+    el.giveUpBtn.disabled = true;
+    el.nextBtn.disabled = false;
+    el.nextBtn.textContent = "Next bird →";
+    closePickOverlay();
+    // Deferred: if this finishRound() was reached synchronously off the guess
+    // input's Enter keydown (e.g. an instant chain-match with no network round
+    // trip), focusing the button in the same tick means the SAME keystroke's
+    // release still lands on it — instantly "clicking" Next bird. Pushing the
+    // focus into its own task lets the current key event finish first.
+    setTimeout(() => el.nextBtn.focus(), 0);
+  }
+
+  // ---------- pick-me (multiple choice) ----------
+  const PICK_RANKS = ["family", "genus", "species"];
+  let pickBusyId = 0; // guards against a stale async response landing after the overlay moved on/closed
+
+  function rankIndexInRanks(rank){ return RANKS.indexOf(rank); }
+
+  function immediateParentRank(rank){
+    const i = rankIndexInRanks(rank);
+    return i > 0 ? RANKS[i - 1] : null;
+  }
+
+  function dedupeById(list){
+    const seen = new Set(), out = [];
+    list.forEach(t => { if(t && !seen.has(t.id)){ seen.add(t.id); out.push(t); } });
+    return out;
+  }
+
+  async function fetchRankChildren(ancestorId, rank){
+    try{
+      const qs = new URLSearchParams({ taxon_id: String(ancestorId), rank, per_page: "40", is_active: "true" });
+      const data = await fetchJSON(`${API}/taxa?${qs.toString()}`);
+      return data.results || [];
+    }catch(e){ return []; }
+  }
+
+  // Widens the search outward (family←order←class←…) until there are enough
+  // wrong options to fill the grid, or we run out of ancestors to try.
+  async function fetchPickPool(rank, correctId){
+    let ancestorRank = immediateParentRank(rank);
+    let pool = [];
+    while(ancestorRank){
+      const anchorNode = state.chain.find(n => n.rank === ancestorRank);
+      if(anchorNode){
+        const children = await fetchRankChildren(anchorNode.id, rank);
+        pool = dedupeById(pool.concat(children));
+        if(pool.filter(t => t.id !== correctId).length >= 8) break;
+      }
+      ancestorRank = immediateParentRank(ancestorRank);
+    }
+    return pool;
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = rnd(0, i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickCellPhoto(taxon){
+    const p = taxon.default_photo;
+    return p ? (p.medium_url || p.small_url || p.square_url || p.url) : "";
+  }
+
+  function renderPickStatus(text){
+    el.pickBody.innerHTML = `<div class="pick-status">${text}</div>`;
+  }
+
+  function setPickProgress(rank){
+    const stepNum = PICK_RANKS.indexOf(rank) + 1;
+    el.pickProgress.innerHTML = `Step <b>${stepNum}</b> of ${PICK_RANKS.length}`;
+  }
+
+  // Finds the first rank in family → genus → species that (a) exists in this
+  // round's chain and (b) hasn't already been reached by a typed guess.
+  function nextUnresolvedPickRank(){
+    for(const rank of PICK_RANKS){
+      const idx = state.chain.findIndex(n => n.rank === rank);
+      if(idx === -1) continue;
+      if(idx > state.bestIdx) return rank;
+    }
+    return null;
+  }
+
+  function openPickOverlay(){
+    el.pickOverlay.classList.add("show");
+    if(state && state.obs){
+      const url = photoUrl(state.obs);
+      if(url) el.pickPhotoImg.src = url;
+    }
+    el.guessBtn.disabled = true;
+    el.guessInput.disabled = true;
+    el.pickBtn.disabled = true;
+    el.giveUpBtn.disabled = true;
+  }
+
+  function closePickOverlay(){
+    el.pickOverlay.classList.remove("show");
+    pickBusyId++; // invalidate any in-flight fetch for a grid the user backed out of
+    if(state && !state.finished){
+      el.guessBtn.disabled = false;
+      el.guessInput.disabled = false;
+      el.pickBtn.disabled = false;
+      el.giveUpBtn.disabled = false;
+    }
+  }
+
+  async function startPickMe(){
+    if(!state || state.finished) return;
+    const rank = nextUnresolvedPickRank();
+    if(!rank){
+      // Nothing left to multiple-choice — hand off to the normal reveal flow.
+      finishRound(false);
+      return;
+    }
+    openPickOverlay();
+    await openPickGrid(rank);
+  }
+
+  async function openPickGrid(rank){
+    const myId = ++pickBusyId;
+    el.pickEyebrow.textContent = "Multiple choice";
+    el.pickTitle.textContent = `Pick the ${rank}`;
+    setPickProgress(rank);
+    renderPickStatus("Gathering candidates…");
+
+    const correctFull = state.fullByRank[rank];
+    if(!correctFull){
+      renderPickStatus("Couldn't find enough taxonomic data for this rank.");
+      return;
+    }
+
+    let pool;
+    try{
+      pool = await fetchPickPool(rank, correctFull.id);
+    }catch(e){
+      pool = [];
+    }
+    if(myId !== pickBusyId) return; // overlay moved on while this was in flight
+
+    const wrongPool = shuffle(pool.filter(t => t.id !== correctFull.id)).slice(0, 8);
+    const options = shuffle([correctFull, ...wrongPool]);
+
+    if(options.length < 2){
+      renderPickStatus("Not enough related taxa on record to build a multiple-choice grid for this rank.");
+      return;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "pick-grid";
+    options.forEach(taxon => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pick-cell";
+      const photo = pickCellPhoto(taxon);
+      const label = taxon.preferred_common_name || taxon.name;
+      const sci = taxon.name;
+      btn.innerHTML = `
+        ${photo ? `<img src="${photo.replace(/"/g, "&quot;")}" alt="" loading="lazy">` : `<div style="flex:1;min-height:0;background:var(--surface-2);"></div>`}
+        <div class="pc-label">${label}${label !== sci ? `<i>${sci}</i>` : ""}</div>
+      `;
+      btn.addEventListener("click", () => handlePickChoice(rank, taxon, correctFull.id, btn));
+      grid.appendChild(btn);
+    });
+    el.pickBody.innerHTML = "";
+    el.pickBody.appendChild(grid);
+  }
+
+  function handlePickChoice(rank, taxon, correctId, btnEl){
+    if(!state || state.finished) return;
+    if(taxon.id !== correctId){
+      btnEl.classList.add("wrong");
+      btnEl.disabled = true;
+      return;
+    }
+
+    // Correct — lock the whole grid and score it exactly like a matching
+    // typed guess would score at this rank.
+    el.pickBody.querySelectorAll(".pick-cell").forEach(c => { c.disabled = true; });
+    btnEl.classList.add("correct");
+
+    const idx = state.chain.findIndex(n => n.rank === rank);
+    const score = scoreForIdx(idx);
+    const prevRevealIdx = state.revealIdx;
+    state.guesses += 1;
+    if(idx > state.bestIdx){
+      state.bestIdx = idx;
+      state.bestScore = score;
+      state.revealIdx = idx;
+    }
+    addFeedItem(taxon.preferred_common_name || taxon.name, taxon, idx, score);
+    updateLadderReveal(prevRevealIdx);
+
+    const isSpeciesMatch = idx === state.chain.length - 1;
+    setTimeout(() => {
+      if(!state || state.finished) return;
+      if(isSpeciesMatch){
+        closePickOverlay();
+        finishRound(true);
+      }else{
+        const nextRank = nextUnresolvedPickRank();
+        if(nextRank) openPickGrid(nextRank);
+        else { closePickOverlay(); finishRound(true); }
+      }
+    }, 650);
+  }
+
+  // ---------- region / place selector ----------
+  function populateRegionSelect(){
+    REGIONS.slice(1).forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r.q;
+      opt.textContent = r.label;
+      el.regionSelect.appendChild(opt);
+    });
+    if(placeId){
+      const opt = document.createElement("option");
+      opt.value = "__url__";
+      opt.textContent = "📍 From link";
+      opt.selected = true;
+      el.regionSelect.insertBefore(opt, el.regionSelect.firstChild.nextSibling);
+    }
+  }
+
+  async function resolvePlaceId(name){
+    if(placeIdCache[name]) return placeIdCache[name];
+    const qs = new URLSearchParams({ q: name, per_page: "8" });
+    const data = await fetchJSON(`${API}/places/autocomplete?${qs.toString()}`);
+    const results = data.results || [];
+    if(!results.length) return null;
+    const exact = results.find(p => (p.name || "").toLowerCase() === name.toLowerCase());
+    const id = (exact || results[0]).id;
+    placeIdCache[name] = id;
+    return id;
+  }
+
+  async function onRegionChange(){
+    const val = el.regionSelect.value;
+    if(val === "__url__") return;
+    el.regionSelect.disabled = true;
+    el.regionStatus.textContent = "";
+    if(!val){
+      placeId = null;
+    }else{
+      el.regionStatus.textContent = "finding region…";
+      try{
+        const id = await resolvePlaceId(val);
+        if(!id){
+          showError(`Couldn't find "${val}" as an iNaturalist place — showing everywhere instead.`);
+          placeId = null;
+          el.regionSelect.value = "";
+        }else{
+          placeId = id;
+        }
+      }catch(e){
+        console.error(e);
+        showError("Couldn't reach iNaturalist to resolve that region.");
+        placeId = null;
+        el.regionSelect.value = "";
+      }
+    }
+    el.regionStatus.textContent = "";
+    el.regionSelect.disabled = false;
+
+    const url = new URL(location.href);
+    if(placeId) url.searchParams.set("place_id", placeId); else url.searchParams.delete("place_id");
+    history.replaceState(null, "", url);
+
+    loadNewRound();
+  }
+
+  // ---------- events ----------
+  el.guessBtn.addEventListener("click", submitGuess);
+  el.guessInput.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); submitGuess(); } });
+  el.giveUpBtn.addEventListener("click", () => finishRound(false));
+  el.pickBtn.addEventListener("click", startPickMe);
+  el.pickCloseBtn.addEventListener("click", closePickOverlay);
+  el.pickRevealBtn.addEventListener("click", () => { closePickOverlay(); finishRound(false); });
+  el.nextBtn.addEventListener("click", loadNewRound);
+  el.regionSelect.addEventListener("change", onRegionChange);
+  el.difficultySlider.addEventListener("input", () => {
+    difficulty = Number(el.difficultySlider.value);
+    updateDifficultyLabel();
+  });
+
+  // ---------- difficulty label ----------
+  function updateDifficultyLabel(){
+    const v = difficulty;
+    let text;
+    if(v === 50) text = "Balanced mix";
+    else if(v < 50) text = (50 - v) > 30 ? "Strongly favors common" : "Favors common";
+    else text = (v - 50) > 30 ? "Strongly favors rare" : "Favors rare";
+    el.difficultyLabel.textContent = text;
+  }
+
+  // ---------- clade label ----------
+  async function setCladeLabel(){
+    if(CLADE_ID === "3"){
+      el.cladeLabel.textContent = "Field ID · Aves";
+      return;
+    }
+    try{
+      const detail = await fetchTaxonDetail(CLADE_ID);
+      el.cladeLabel.textContent = `Field ID · ${detail.preferred_common_name || detail.name}`;
+    }catch(e){ /* keep default */ }
+  }
+
+  populateRegionSelect();
+  updateDifficultyLabel();
+  setCladeLabel();
+  loadNewRound();
+})();
+</script>
+</body>
+</html>
