@@ -53,69 +53,24 @@
   .wrap{
     max-width: min(1680px, 96vw);
     margin: 0 auto;
-    padding: 18px 20px 32px;
+    padding: 14px 20px 32px;
   }
 
-  header.top{
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
+  /* ---------- header bar ---------- */
+  .header-bar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .header-controls{
+    display: flex;
+    align-items: center;
     gap: 20px;
     flex-wrap: wrap;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 12px;
-    margin-bottom: 14px;
-  }
-
-  .brand-eyebrow{
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--leaf);
-    margin: 0 0 6px;
-  }
-
-  h1.brand{
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(28px, 4vw, 42px);
-    margin: 0;
-    color: var(--paper);
-    letter-spacing: -0.01em;
-  }
-  h1.brand em{
-    font-style: italic;
-    color: var(--gold);
-    font-weight: 400;
-  }
-
-  .subtitle{
-    font-size: 13px;
-    color: var(--muted);
-    margin: 4px 0 0;
-    max-width: 46ch;
-    line-height: 1.45;
-  }
-
-  .stats{
-    display:flex;
-    gap: 22px;
-    font-family: var(--font-mono);
-  }
-  .stat{ text-align: right; }
-  .stat .num{
-    font-size: 26px;
-    color: var(--gold);
-    font-weight: 600;
-    line-height: 1;
-    display:block;
-  }
-  .stat .lbl{
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
   }
 
   main.grid{
@@ -133,6 +88,24 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+  }
+
+  .app-title{
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.4vw, 28px);
+    font-weight: 400;
+    color: var(--paper);
+    letter-spacing: -0.01em;
+  }
+  .app-title em{
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 400;
+  }
+  .app-title b{
+    font-weight: 700;
+    color: var(--paper);
   }
 
   .card{
@@ -301,17 +274,55 @@
   .feed li.s-lo{ border-left-color: var(--rust); }
   .feed li.s-none{ border-left-color: var(--danger); }
   .feed li.s-echo{ border-left-color: var(--teal); border-left-style: dashed; }
+  .feed li.has-echo{
+    align-items: flex-start;
+    background: rgba(224,172,69,0.18);
+    border-color: rgba(224,172,69,0.6);
+    border-left-color: var(--gold);
+    border-left-width: 5px;
+    animation: slidein 0.25s ease, echoPulse 1.2s ease 0.2s;
+  }
+  @keyframes echoPulse{
+    0%{ box-shadow: 0 0 0 0 rgba(224,172,69,0.55); }
+    55%{ box-shadow: 0 0 0 8px rgba(224,172,69,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(224,172,69,0); }
+  }
   .feed .fq{ color: var(--muted); flex: 0 0 auto; font-family: var(--font-mono); font-size: 11px; }
   .feed .fm{ flex: 1; }
   .feed .fm b{ color: var(--paper); }
-  .feed .fs{
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 13px;
-    flex: 0 0 auto;
-    min-width: 34px;
-    text-align: right;
+  .echo-line{
+    display: block;
+    margin-top: 5px;
     color: var(--gold);
+    font-weight: 500;
+  }
+  .echo-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-right: 6px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .echo-mark{
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 700;
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(224,172,69,0.5);
   }
 
   /* ---------- ladder / cladogram ---------- */
@@ -439,16 +450,50 @@
   .rung.revealed .rk-name{ color: var(--paper); }
   .rung.revealed .rk-common{ color: var(--leaf); }
 
-  .reveal-box{
+  /* ---------- solution folded panel ---------- */
+  .reveal-details{
     margin-top: 16px;
-    padding-top: 14px;
     border-top: 1px dashed var(--line);
+    display: none;
+  }
+  .reveal-details.show{
+    display: block;
+  }
+  .reveal-details summary{
+    padding: 12px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    transition: color 0.15s;
+    list-style: none; /* Hide default arrow in webkit */
+  }
+  .reveal-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .reveal-details summary::before {
+    content: "► ";
+    display: inline-block;
+    margin-right: 4px;
+    transition: transform 0.2s;
+  }
+  .reveal-details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .reveal-details summary:hover{
+    color: #eebd5f;
+  }
+
+  .reveal-box{
+    padding-top: 8px;
     font-size: 12.5px;
     color: var(--muted);
     line-height: 1.6;
-    display: none;
   }
-  .reveal-box.show{ display:block; }
   .reveal-box a{ text-decoration: underline; text-underline-offset: 2px; }
 
   .reveal-score{
@@ -569,7 +614,7 @@
     display:flex;
     align-items:center;
     gap: 9px;
-    margin: 0 0 12px;
+    margin: 0;
     font-family: var(--font-mono);
     font-size: 11.5px;
   }
@@ -597,7 +642,7 @@
     display:flex;
     align-items:center;
     gap: 11px;
-    margin: 0 0 12px;
+    margin: 0;
     font-family: var(--font-mono);
     font-size: 11.5px;
   }
@@ -878,34 +923,27 @@
 <body>
 <div class="wrap">
 
-  <header class="top">
-    <div>
-      <p class="brand-eyebrow" id="cladeLabel">Field ID · Aves</p>
-      <h1 class="brand">Field <em>ID</em></h1>
-      <p class="subtitle">A photo, no name attached. Guess the bird — genus, family, or a common name all score partial credit the closer you get.</p>
-    </div>
-    <div class="stats">
-      <div class="stat"><span class="num" id="statTotal">0</span><span class="lbl">Score</span></div>
-      <div class="stat"><span class="num" id="statRounds">0</span><span class="lbl">Birds</span></div>
-      <div class="stat"><span class="num" id="statAvg">–</span><span class="lbl">Avg</span></div>
+  <header class="header-bar">
+    <h1 class="app-title"><em>Av</em><b>ID</b></h1>
+
+    <div class="header-controls">
+      <div class="region-row">
+        <label for="regionSelect">Region</label>
+        <select id="regionSelect">
+          <option value="">🌍 Everywhere</option>
+        </select>
+        <span class="region-status" id="regionStatus"></span>
+      </div>
+
+      <div class="difficulty-row">
+        <label for="difficultySlider">Difficulty</label>
+        <span class="diff-end">Common</span>
+        <input type="range" id="difficultySlider" min="0" max="100" step="1" value="50">
+        <span class="diff-end">Rare</span>
+        <span class="diff-label" id="difficultyLabel">Balanced mix</span>
+      </div>
     </div>
   </header>
-
-  <div class="region-row">
-    <label for="regionSelect">Region</label>
-    <select id="regionSelect">
-      <option value="">🌍 Everywhere</option>
-    </select>
-    <span class="region-status" id="regionStatus"></span>
-  </div>
-
-  <div class="difficulty-row">
-    <label for="difficultySlider">Difficulty</label>
-    <span class="diff-end">Common</span>
-    <input type="range" id="difficultySlider" min="0" max="100" step="1" value="50">
-    <span class="diff-end">Rare</span>
-    <span class="diff-label" id="difficultyLabel">Balanced mix</span>
-  </div>
 
   <div class="err-banner" id="errBanner"></div>
 
@@ -930,7 +968,7 @@
           <button class="primary" id="guessBtn" disabled>Guess</button>
         </div>
         <div class="panel-foot">
-          <span class="hint" id="hintText">Common name, scientific name, family, genus, etc.</span>
+          <span class="hint" id="hintText"></span>
           <div style="display:flex; gap:8px;">
             <button class="ghost" id="pickBtn" disabled>Pick me</button>
             <button class="ghost" id="giveUpBtn" disabled>Reveal answer</button>
@@ -944,7 +982,12 @@
         <h2>Taxonomic ladder</h2>
         <div class="best-line" id="bestLine">Make a guess to start climbing.</div>
         <div class="ladder" id="ladder"></div>
-        <div class="reveal-box" id="revealBox"></div>
+        
+        <!-- Collapsible solution panel -->
+        <details class="reveal-details" id="revealDetails">
+          <summary id="revealSummary">Species Information & Solution</summary>
+          <div class="reveal-box" id="revealBox"></div>
+        </details>
       </div>
     </div>
   </main>
@@ -1010,12 +1053,6 @@
 
   const RANKS = ["kingdom","phylum","class","order","family","genus","species"];
   const RANK_LABELS = { kingdom:"Kingdom", phylum:"Phylum", class:"Class", order:"Order", family:"Family", genus:"Genus", species:"Species" };
-  const WEIGHTS = { kingdom:2, phylum:3, class:5, order:15, family:25, genus:25, species:25 };
-  const CUM = (() => {
-    let running = 0, out = {};
-    RANKS.forEach(r => { running += WEIGHTS[r]; out[r] = running; });
-    return out;
-  })();
 
   // ---------- state ----------
   let state = null;
@@ -1042,12 +1079,10 @@
     feed: document.getElementById("feed"),
     ladder: document.getElementById("ladder"),
     bestLine: document.getElementById("bestLine"),
+    revealDetails: document.getElementById("revealDetails"),
+    revealSummary: document.getElementById("revealSummary"),
     revealBox: document.getElementById("revealBox"),
-    statTotal: document.getElementById("statTotal"),
-    statRounds: document.getElementById("statRounds"),
-    statAvg: document.getElementById("statAvg"),
     errBanner: document.getElementById("errBanner"),
-    cladeLabel: document.getElementById("cladeLabel"),
     hintText: document.getElementById("hintText"),
     regionSelect: document.getElementById("regionSelect"),
     regionStatus: document.getElementById("regionStatus"),
@@ -1055,12 +1090,9 @@
     difficultyLabel: document.getElementById("difficultyLabel"),
   };
 
-  // difficulty: 0 = easiest (bias toward commonly-observed species), 100 =
-  // hardest (bias toward rarely-observed species), 50 = no bias either way.
+  // difficulty: 0 = easiest, 100 = hardest, 50 = neutral.
   let difficulty = Number(el.difficultySlider.value) || 50;
   const speciesPoolCache = {};
-
-  let totalScore = 0, roundsPlayed = 0;
 
   function showError(msg){
     el.errBanner.textContent = msg;
@@ -1079,11 +1111,6 @@
 
   // ---------- fetching a random bird observation ----------
 
-  // The original approach: grab a shuffled page of research-grade observations
-  // for the whole clade and pick one at random, with no regard for how common
-  // the species is. Used directly when difficulty is neutral (50), and as a
-  // fallback whenever the difficulty-weighted species pool can't be built or
-  // comes up empty.
   async function fetchRandomObservationUniform(attempt){
     attempt = attempt || 0;
     const orderBys = ["votes","observed_on","created_at","id","random"];
@@ -1111,10 +1138,6 @@
     return pick(results);
   }
 
-  // Fetches the pool of species observed within the current clade/region, each
-  // tagged with how many research-grade observations it has — the commonness
-  // signal the difficulty slider biases against. Cached per clade+region since
-  // it doesn't change round to round.
   async function fetchSpeciesPool(){
     const cacheKey = `${CLADE_ID}:${placeId || ""}`;
     if(speciesPoolCache[cacheKey]) return speciesPoolCache[cacheKey];
@@ -1133,10 +1156,6 @@
     return pool;
   }
 
-  // Weighted pick over the species pool. diff 0 = strongly favor high-count
-  // (common) species; diff 100 = strongly favor low-count (rare) species;
-  // diff 50 = uniform, ignoring count entirely — the midpoint is a deliberate
-  // "no bias" setting, not just an average of the two extremes.
   function pickWeightedSpecies(pool, diff){
     const k = (50 - diff) / 50; // +1 .. 0 .. -1
     const weights = pool.map(r => Math.pow(Math.max(r.count, 1), k));
@@ -1181,8 +1200,6 @@
         const results = await fetchObservationsForTaxon(candidate.taxon.id);
         if(results.length) return pick(results);
       }
-      // Every weighted pick came up dry (e.g. photos got removed since the
-      // pool was cached) — fall back rather than fail the round.
       return fetchRandomObservationUniform();
     }catch(e){
       console.error(e);
@@ -1196,7 +1213,6 @@
     return data.results[0];
   }
 
-  // Robustly constructs the 7-rank chain in canonical order
   function buildChain(taxonDetail){
     const all = (taxonDetail.ancestors || []).concat(taxonDetail).map(a => ({
       id: a.id, name: a.name, rank: a.rank, common: a.preferred_common_name || null
@@ -1210,9 +1226,6 @@
     return RANKS.map(r => map.get(r)).filter(Boolean);
   }
 
-  // Same dedup as buildChain but keeps the full taxon objects (with
-  // default_photo, preferred_common_name, etc.) so the pick-me grid can show
-  // a real photo for the correct answer without an extra API round trip.
   function buildFullByRank(taxonDetail){
     const all = (taxonDetail.ancestors || []).concat(taxonDetail);
     const map = {};
@@ -1246,7 +1259,6 @@
         fullByRank: buildFullByRank(detail),
         bestIdx: -1,
         revealIdx: -1,
-        bestScore: 0,
         guesses: 0,
         finished: false,
       };
@@ -1255,7 +1267,8 @@
       renderLadder();
       el.feed.innerHTML = "";
       el.bestLine.textContent = "Make a guess to start climbing.";
-      el.revealBox.classList.remove("show");
+      el.revealDetails.classList.remove("show");
+      el.revealDetails.open = false;
       setLoading(false);
     }catch(e){
       console.error(e);
@@ -1309,9 +1322,12 @@
     el.creditLink.href = obs.uri || `https://www.inaturalist.org/observations/${obs.id}`;
   }
 
+  const LADDER_HIDDEN_RANKS = new Set(["kingdom", "phylum", "class"]);
+
   function renderLadder(){
     el.ladder.innerHTML = "";
     state.chain.forEach((node, i) => {
+      if(LADDER_HIDDEN_RANKS.has(node.rank)) return;
       const div = document.createElement("div");
       div.className = "rung";
       div.dataset.idx = i;
@@ -1332,7 +1348,8 @@
 
   function updateLadderReveal(prevRevealIdx){
     const rungs = el.ladder.querySelectorAll(".rung");
-    rungs.forEach((rung, i) => {
+    rungs.forEach((rung) => {
+      const i = Number(rung.dataset.idx);
       const node = state.chain[i];
       if(!node) return;
       if(i <= state.revealIdx){
@@ -1343,9 +1360,11 @@
         rung.querySelector(".rk-common").textContent = node.common ? node.common : "";
       }
     });
-    if(state.bestIdx >= 0 && state.chain[state.bestIdx]){
+    if(state.bestIdx >= 0 && state.chain[state.bestIdx] && !LADDER_HIDDEN_RANKS.has(state.chain[state.bestIdx].rank)){
       const node = state.chain[state.bestIdx];
       el.bestLine.innerHTML = `You reached: <b>${RANK_LABELS[node.rank] || node.rank}</b> — ${node.common ? node.common + " · " : ""}<i>${node.name}</i>`;
+    } else if(state.bestIdx >= 0){
+      el.bestLine.textContent = "That's too broad — try narrowing to order, family, genus, or species.";
     } else {
       el.bestLine.textContent = "Make a guess to start climbing.";
     }
@@ -1366,16 +1385,9 @@
     }
     return false;
   }
-  // Ranks a guess is unlikely to nail with just a bare generic word ("cormorant",
-  // "wren") — English group names for family/order are usually just the plain plural,
-  // while genus/species names pair that same word with a real distinguishing
-  // modifier ("Great Cormorant", "Typical Old World Cormorants"). Treating a lone-word
-  // hit on these ranks as weaker keeps a guess like "cormorant" pointed at the family
-  // instead of an incidental genus or species that merely shares the word.
+
   const FINE_RANKS = new Set(["genus", "subgenus", "species", "hybrid", "complex", "subspecies", "variety", "form"]);
 
-  // Rank specificity for tiebreaking, low = more specific. Prefers taxon.rank_level
-  // (as returned by the API) and falls back to position in RANKS for anything missing it.
   function rankLevelOf(taxon){
     if(typeof taxon.rank_level === "number") return taxon.rank_level;
     const idx = RANKS.indexOf(taxon.rank);
@@ -1396,15 +1408,8 @@
 
     if(qNorm && (commonTokens.join(" ") === qNorm || sciTokens.join(" ") === qNorm)) return 0;
 
-    // The guessed words all appear as a contiguous run inside a *longer* name
-    // ("rainbow lorikeet" inside "Rainbow Lorikeets and Allies"). Close, but this
-    // taxon's real name has extra words the guess didn't account for, so it must
-    // rank below a true tier-0 identity match found elsewhere among the candidates.
     if(qTokens.length > 1 && containsSubsequence(commonTokens, qTokens)) return 1;
 
-    // How many guessed words land as exact whole words in this taxon's name? Using
-    // "any token hit" rather than "the whole query is one token" also lets a guess
-    // with a typo'd modifier ("greater cormorant") still connect on its head noun.
     const commonHits = qTokens.filter(t => commonTokens.includes(t)).length;
     const sciHits = qTokens.filter(t => sciTokens.includes(t)).length;
 
@@ -1423,9 +1428,6 @@
     return data.results || [];
   }
 
-  // Builds progressively simpler versions of the query to retry if the full phrase
-  // finds nothing — e.g. "greater cormorant" (typo'd modifier) falls back to trying
-  // just "cormorant", the word actually likely to match something.
   function buildQueryAttempts(query){
     const words = query.trim().split(/\s+/).filter(Boolean);
     const attempts = [query.trim()];
@@ -1434,24 +1436,10 @@
     return [...new Set(attempts.filter(Boolean))];
   }
 
-  // Wraps a chain node ({id, name, rank, common}) in the shape matchTier expects.
   function chainNodeAsTaxon(node){
     return { name: node.name, preferred_common_name: node.common, rank: node.rank };
   }
 
-  // Checks the guess directly against THIS round's own species/genus/family/…
-  // chain before ever hitting the external search. This is the fix for guesses
-  // like "wood duck" on an Australian Wood Duck: the external taxa search finds
-  // an exact-text match on the unrelated Northern-Hemisphere "Wood Duck" (Aix
-  // sponsa) at a better tier than the true answer gets for merely containing the
-  // phrase — so relying on search results alone, even with lineage tiebreaking,
-  // still loses to that unrelated exact match. Testing the chain directly sidesteps
-  // that: a guess that exactly or cleanly names something in the real answer's own
-  // lineage IS what's being asked for, full stop, regardless of what else that
-  // text happens to match globally. Only short-circuits on a strong match
-  // (tier 0 exact, or tier 1 clean phrase-containment); looser hits (a lone shared
-  // word, a prefix, etc.) fall through to the normal search-based resolution so
-  // legitimately wrong guesses still get resolved and scored as such.
   function resolveAgainstChain(query){
     if(!state || !state.chain || !state.chain.length) return null;
     let bestNode = null, bestTier = Infinity, bestIdx = -1;
@@ -1484,14 +1472,6 @@
     }
     if(!results.length) return null;
 
-    // Tiebreak prefers, in order: (1) the current round's actual lineage over an
-    // unrelated same-tier candidate — e.g. a guess of "magpie" should resolve
-    // toward this round's own Australian Magpie/Gymnorhina rather than an
-    // unrelated Magpie Goose that merely shares the word — and among candidates
-    // that DO sit on the current lineage, the deepest (most specific) one wins,
-    // so a guess that could name either a sibling species or the exact species
-    // being shown lands on the exact one; (2) the MORE SPECIFIC taxon (lower
-    // rank_level) when nothing distinguishes candidates via the round's lineage.
     const chain = state ? state.chain : null;
     const ranked = results
       .map((t, i) => ({ t, tier: matchTier(query, t), i, chainIdx: chain ? computeMatchIdx(chain, t) : -1 }))
@@ -1511,12 +1491,6 @@
       if(guessIds.has(chain[i].id)) idx = i;
     }
     return idx;
-  }
-
-  function scoreForIdx(idx){
-    if(idx < 0 || idx >= state.chain.length) return 0;
-    const rank = state.chain[idx].rank;
-    return CUM[rank] || 0;
   }
 
   function feedbackFor(idx, exactSpecies){
@@ -1553,11 +1527,6 @@
     return null;
   }
 
-  // Finds a word shared between the guess and the true species' common name that
-  // isn't already accounted for by the rank the guess landed on — e.g. guessing
-  // "white-eyed heron" for a White-faced Heron only reaches family level ("heron"
-  // is shared with the family name too), but "white" is a distinguishing word the
-  // guess got right that the family-level match doesn't capture on its own.
   function findSpeciesWordOverlap(query, speciesNode, achievedNode){
     if(!speciesNode || !speciesNode.common) return null;
     const qTokensArr = tokenize(query).map(normalizeToken).filter(w => w.length > 2);
@@ -1567,9 +1536,6 @@
     const achievedSet = new Set(achievedTokens);
     const targetTokens = tokenize(speciesNode.common).map(normalizeToken);
 
-    // Prefer surfacing the whole guessed phrase when it runs contiguously inside
-    // the true species' name — e.g. guessing "wood duck" should point at "wood
-    // duck" as a phrase, not just the single word "wood".
     if(qTokensArr.length > 1 && containsSubsequence(targetTokens, qTokensArr) && !containsSubsequence(achievedTokens, qTokensArr)){
       return qTokensArr.join(" ");
     }
@@ -1577,18 +1543,27 @@
     for(const w of targetTokens){
       if(qTokens.has(w) && !achievedSet.has(w)) return w;
     }
+
+    for(const w of targetTokens){
+      if(achievedSet.has(w)) continue;
+      for(const q of qTokens){
+        if(w.length > q.length && (w.endsWith(q) || w.startsWith(q))) return w;
+      }
+    }
     return null;
   }
 
-  function addFeedItem(query, guessTaxon, idx, score){
+  function addFeedItem(query, guessTaxon, idx){
     const li = document.createElement("li");
     const isExactSpecies = guessTaxon && idx === state.chain.length - 1 && guessTaxon.id === state.detail.id;
     let fb = feedbackFor(idx, isExactSpecies);
+    let hasEcho = false;
     if(idx < 0){
       const echo = findNameEcho(query, state.chain);
       if(echo){
+        hasEcho = true;
         fb = {
-          text: `Not a taxonomic match — but "${echo.word}" appears in the name of its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).`,
+          text: `<div class="echo-line"><span class="echo-badge">🔎 Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
           cls: "s-echo"
         };
       }
@@ -1596,14 +1571,15 @@
       const speciesNode = state.chain[state.chain.length - 1];
       const overlapWord = findSpeciesWordOverlap(query, speciesNode, state.chain[idx]);
       if(overlapWord){
-        fb = { text: `${fb.text} Close — the species name contains "${overlapWord}".`, cls: fb.cls };
+        hasEcho = true;
+        fb = { text: `${fb.text}<div class="echo-line"><span class="echo-badge">🔎 Name match</span>Also close — the species name echoes <mark class="echo-mark">${overlapWord}</mark>.</div>`, cls: fb.cls };
       }
     }
-    li.className = fb.cls;
+    li.className = fb.cls + (hasEcho ? " has-echo" : "");
     const commonBit = guessTaxon
       ? `→ <b>${guessTaxon.preferred_common_name || guessTaxon.name}</b> <i>(${guessTaxon.name})</i> · ${fb.text}`
-      : `→ no matching taxon found, try a different name`;
-    li.innerHTML = `<span class="fq">"${query}"</span><span class="fm">${commonBit}</span><span class="fs">${score > 0 ? "+" + score : "—"}</span>`;
+      : `→ no matching taxon found, try a different name${hasEcho ? fb.text : ""}`;
+    li.innerHTML = `<span class="fq">"${query}"</span><span class="fm">${commonBit}</span>`;
     el.feed.prepend(li);
   }
 
@@ -1617,29 +1593,18 @@
     try{
       const guessTaxon = await resolveGuess(query);
       const prevRevealIdx = state.revealIdx;
-      let idx = -1, score = 0;
+      let idx = -1;
       if(guessTaxon){
         idx = computeMatchIdx(state.chain, guessTaxon);
-        score = scoreForIdx(idx);
       }
       state.guesses += 1;
       if(idx > state.bestIdx){
         state.bestIdx = idx;
-        state.bestScore = score;
         state.revealIdx = idx;
       }
-      addFeedItem(query, guessTaxon, idx, score);
+      addFeedItem(query, guessTaxon, idx);
       updateLadderReveal(prevRevealIdx);
 
-      // idx reaching the species position already proves the guess is correct —
-      // computeMatchIdx only gets there if the resolved taxon IS the species or
-      // is more specific than it (a subspecies whose ancestry passes through the
-      // species), so no extra id-equality check is needed. That extra check was
-      // the actual bug: it silently required the API to resolve the guess to the
-      // bare species rather than any infraspecific taxon below it (e.g. "swamphen"
-      // resolving to the subspecies Porphyrio melanotus melanotus), which is a
-      // completely normal, correct resolution that kept failing this check and
-      // leaving the round stuck.
       const isSpeciesMatch = idx === state.chain.length - 1;
       if(isSpeciesMatch){
         finishRound(true);
@@ -1739,8 +1704,8 @@
 
     el.revealBox.innerHTML = `
       <div class="reveal-score">${solved
-        ? `Solved in ${state.guesses} guess${state.guesses === 1 ? "" : "es"} · scored <b>${state.bestScore}</b> pts.`
-        : `You scored <b>${state.bestScore}</b> pts.`
+        ? `Solved in ${state.guesses} guess${state.guesses === 1 ? "" : "es"}.`
+        : `Answer revealed.`
       } <a href="${state.obs.uri}" target="_blank" rel="noopener">View this observation ↗</a></div>
       ${headline}
       <div class="reveal-section" id="morePhotosSection"></div>
@@ -1785,17 +1750,16 @@
   function finishRound(solved){
     if(!state || state.finished) return;
     state.finished = true;
-    totalScore += state.bestScore;
-    roundsPlayed += 1;
-    el.statTotal.textContent = totalScore;
-    el.statRounds.textContent = roundsPlayed;
-    el.statAvg.textContent = Math.round(totalScore / roundsPlayed);
 
     const prevRevealIdx = state.revealIdx;
     state.revealIdx = state.chain.length - 1;
     updateLadderReveal(prevRevealIdx);
 
-    el.revealBox.classList.add("show");
+    // Dynamic Summary Text
+    const name = state.detail.preferred_common_name || state.detail.name;
+    el.revealSummary.textContent = solved ? `Solved: ${name} (Click to expand)` : `Revealed: ${name} (Click to expand)`;
+
+    el.revealDetails.classList.add("show");
     renderRevealDetails(state, solved);
 
     el.photoCard.classList.add("revealed");
@@ -1807,17 +1771,13 @@
     el.nextBtn.disabled = false;
     el.nextBtn.textContent = "Next bird →";
     closePickOverlay();
-    // Deferred: if this finishRound() was reached synchronously off the guess
-    // input's Enter keydown (e.g. an instant chain-match with no network round
-    // trip), focusing the button in the same tick means the SAME keystroke's
-    // release still lands on it — instantly "clicking" Next bird. Pushing the
-    // focus into its own task lets the current key event finish first.
+
     setTimeout(() => el.nextBtn.focus(), 0);
   }
 
   // ---------- pick-me (multiple choice) ----------
   const PICK_RANKS = ["family", "genus", "species"];
-  let pickBusyId = 0; // guards against a stale async response landing after the overlay moved on/closed
+  let pickBusyId = 0; 
 
   function rankIndexInRanks(rank){ return RANKS.indexOf(rank); }
 
@@ -1840,8 +1800,6 @@
     }catch(e){ return []; }
   }
 
-  // Widens the search outward (family←order←class←…) until there are enough
-  // wrong options to fill the grid, or we run out of ancestors to try.
   async function fetchPickPool(rank, correctId){
     let ancestorRank = immediateParentRank(rank);
     let pool = [];
@@ -1880,8 +1838,6 @@
     el.pickProgress.innerHTML = `Step <b>${stepNum}</b> of ${PICK_RANKS.length}`;
   }
 
-  // Finds the first rank in family → genus → species that (a) exists in this
-  // round's chain and (b) hasn't already been reached by a typed guess.
   function nextUnresolvedPickRank(){
     for(const rank of PICK_RANKS){
       const idx = state.chain.findIndex(n => n.rank === rank);
@@ -1905,7 +1861,7 @@
 
   function closePickOverlay(){
     el.pickOverlay.classList.remove("show");
-    pickBusyId++; // invalidate any in-flight fetch for a grid the user backed out of
+    pickBusyId++; 
     if(state && !state.finished){
       el.guessBtn.disabled = false;
       el.guessInput.disabled = false;
@@ -1918,7 +1874,6 @@
     if(!state || state.finished) return;
     const rank = nextUnresolvedPickRank();
     if(!rank){
-      // Nothing left to multiple-choice — hand off to the normal reveal flow.
       finishRound(false);
       return;
     }
@@ -1945,7 +1900,7 @@
     }catch(e){
       pool = [];
     }
-    if(myId !== pickBusyId) return; // overlay moved on while this was in flight
+    if(myId !== pickBusyId) return;
 
     const wrongPool = shuffle(pool.filter(t => t.id !== correctFull.id)).slice(0, 8);
     const options = shuffle([correctFull, ...wrongPool]);
@@ -1983,21 +1938,17 @@
       return;
     }
 
-    // Correct — lock the whole grid and score it exactly like a matching
-    // typed guess would score at this rank.
     el.pickBody.querySelectorAll(".pick-cell").forEach(c => { c.disabled = true; });
     btnEl.classList.add("correct");
 
     const idx = state.chain.findIndex(n => n.rank === rank);
-    const score = scoreForIdx(idx);
     const prevRevealIdx = state.revealIdx;
     state.guesses += 1;
     if(idx > state.bestIdx){
       state.bestIdx = idx;
-      state.bestScore = score;
       state.revealIdx = idx;
     }
-    addFeedItem(taxon.preferred_common_name || taxon.name, taxon, idx, score);
+    addFeedItem(taxon.preferred_common_name || taxon.name, taxon, idx);
     updateLadderReveal(prevRevealIdx);
 
     const isSpeciesMatch = idx === state.chain.length - 1;
@@ -2102,21 +2053,8 @@
     el.difficultyLabel.textContent = text;
   }
 
-  // ---------- clade label ----------
-  async function setCladeLabel(){
-    if(CLADE_ID === "3"){
-      el.cladeLabel.textContent = "Field ID · Aves";
-      return;
-    }
-    try{
-      const detail = await fetchTaxonDetail(CLADE_ID);
-      el.cladeLabel.textContent = `Field ID · ${detail.preferred_common_name || detail.name}`;
-    }catch(e){ /* keep default */ }
-  }
-
   populateRegionSelect();
   updateDifficultyLabel();
-  setCladeLabel();
   loadNewRound();
 })();
 </script>
