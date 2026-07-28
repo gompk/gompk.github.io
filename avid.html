@@ -280,26 +280,32 @@
 
   #advanceBtn{
     white-space: nowrap;
+    width: 150px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    border-width: 1px;
   }
   #advanceBtn.is-reveal:not(:disabled){
-    background: #f6c9a0;
-    border-color: #e2a568;
-    color: #7a3c12;
+    background: #7a1414;
+    border-color: #7a1414;
+    color: #ffffff;
     font-weight: 600;
   }
   #advanceBtn.is-reveal:not(:disabled):hover{
-    background: #f2b986;
-    border-color: #d9954f;
+    background: #8f1919;
+    border-color: #8f1919;
   }
   #advanceBtn.is-next:not(:disabled){
-    background: var(--yellow);
-    border-color: var(--yellow);
-    color: #3d3208;
+    background: #14161c;
+    border-color: #14161c;
+    color: #ffffff;
     font-weight: 600;
   }
   #advanceBtn.is-next:not(:disabled):hover{
-    background: #fcf2cc;
-    border-color: #fcf2cc;
+    background: #23262f;
+    border-color: #23262f;
   }
 
   .panel-foot{
@@ -1654,7 +1660,8 @@
 
     const inClade = t => t.id === cladeIdNum || (t.ancestor_ids || []).includes(cladeIdNum);
     const best = ranked.find(r => inClade(r.t)) || ranked[0];
-    return best ? best.t : null;
+    if(!best || best.tier >= 7) return null;
+    return best.t;
   }
 
   function computeMatchIdx(chain, guessTaxon){
@@ -1753,7 +1760,7 @@
         const tier = rankTierName(echo.node.rank);
         const tierCls = tier ? ` tier-${tier}` : "";
         fb = {
-          text: `<div class="echo-line"><span class="echo-badge${tierCls}">Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark${tierCls}">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
+          text: `<div class="echo-line"><span class="echo-badge${tierCls}">🔎 Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark${tierCls}">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
           cls: "s-echo" + tierCls
         };
       }
@@ -1762,7 +1769,7 @@
       const overlapWord = findSpeciesWordOverlap(query, speciesNode, state.chain[idx]);
       if(overlapWord){
         hasEcho = true;
-        fb = { text: `${fb.text}<div class="echo-line"><span class="echo-badge tier-species">Name match</span>Also close — the species name echoes <mark class="echo-mark tier-species">${overlapWord}</mark>.</div>`, cls: fb.cls };
+        fb = { text: `${fb.text}<div class="echo-line"><span class="echo-badge tier-species">🔎 Name match</span>Also close — the species name echoes <mark class="echo-mark tier-species">${overlapWord}</mark>.</div>`, cls: fb.cls };
       }
     }
     li.className = fb.cls + (hasEcho ? " has-echo" : "");
