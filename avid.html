@@ -6,27 +6,37 @@
 <title>Field ID — a birdwatcher's guessing game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #141f19;
-    --bg-2: #0f1814;
-    --surface: #1c2b23;
-    --surface-2: #24362c;
-    --line: #33473c;
-    --paper: #e8e2cd;
-    --ink: #12190f;
-    --muted: #93a898;
-    --gold: #e0ac45;
-    --gold-dim: #8a6a2c;
-    --rust: #c1592f;
-    --teal: #5b9c92;
-    --leaf: #7ba05b;
-    --danger: #a3402c;
+    --bg: #ffffff;
+    --bg-2: #edeff8;
+    --surface: #ffffff;
+    --surface-2: #f3eef8;
+    --line: #ddd7ea;
+    --paper: #1e2350;
+    --ink: #ffffff;
+    --muted: #767aa0;
+    --gold: #3454d1;
+    --gold-dim: #b9c4f2;
+    --yellow: #f0c419;
+    --yellow-dim: #050401;
+    --yellow-bg: rgba(240,196,25,0.22);
+    --green: #2f9e44;
+    --green-dim: #1a5c27;
+    --green-bg: rgba(47,158,68,0.20);
+    --teal-bg: rgba(160,111,214,0.20);
+    --teal-dim: #5a3684;
+    --leaf-bg: rgba(52,84,209,0.18);
+    --leaf-dim: #1e2350;
+    --rust: #c23a72;
+    --teal: #a06fd6;
+    --leaf: #3454d1;
+    --danger: #b3123f;
     --radius: 3px;
     --font-display: 'Fraunces', serif;
-    --font-body: 'Inter', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Arial', serif;
+    --font-mono: 'Courier Prime', monospace;
   }
 
   *{ box-sizing: border-box; }
@@ -34,13 +44,13 @@
 
   body{
     background:
-      radial-gradient(circle at 15% 8%, rgba(224,172,69,0.05), transparent 40%),
+      radial-gradient(circle at 15% 8%, rgba(52,84,209,0.06), transparent 40%),
       var(--bg);
     color: var(--paper);
     font-family: var(--font-body);
     min-height: 100vh;
     background-image:
-      repeating-radial-gradient(circle at 50% 0%, transparent 0, transparent 68px, rgba(123,160,91,0.035) 69px, transparent 70px),
+      repeating-radial-gradient(circle at 50% 0%, transparent 0, transparent 68px, rgba(214,65,126,0.03) 69px, transparent 70px),
       var(--bg);
     background-attachment: fixed;
   }
@@ -51,9 +61,11 @@
 
   /* ---------- layout ---------- */
   .wrap{
-    max-width: min(1680px, 96vw);
-    margin: 0 auto;
+    margin-left: 60vw;
+    width: 40vw;
+    max-width: none;
     padding: 14px 20px 32px;
+    box-sizing: border-box;
   }
 
   /* ---------- header bar ---------- */
@@ -74,13 +86,19 @@
   }
 
   main.grid{
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 1fr);
-    gap: 18px;
-    align-items: start;
+    display: block;
+  }
+  .left-col{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 60vw;
+    height: 100vh;
+    z-index: 5;
   }
   @media (max-width: 860px){
-    main.grid{ grid-template-columns: 1fr; }
+    .wrap{ margin-left: 0; width: 100%; }
+    .left-col{ position: static; width: auto; height: auto; }
     .photo-frame{ height: min(48vh, 480px) !important; }
     .photo-card.revealed .photo-frame{ height: min(52vh, 520px) !important; }
   }
@@ -115,11 +133,23 @@
   }
 
   /* ---------- photo card ---------- */
-  .photo-card{ overflow: hidden; }
+  .photo-card{
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+  }
+  @media (max-width: 860px){
+    .photo-card{ height: auto; border-radius: var(--radius); border-width: 1px; }
+  }
   .photo-frame{
     position: relative;
     width: 100%;
-    height: min(78vh, 780px);
+    flex: 1;
+    min-height: 0;
     background: var(--bg-2);
     overflow: hidden;
     display: flex;
@@ -127,8 +157,32 @@
     justify-content: center;
     transition: height 0.35s ease;
   }
+
+  .pick-corner{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 6;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.88);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--gold);
+    backdrop-filter: blur(3px);
+  }
+  .pick-corner svg{ width: 17px; height: 17px; display: block; }
+  .pick-corner:hover:not(:disabled){
+    background: #ffffff;
+    border-color: var(--gold);
+  }
+  .pick-corner:disabled{ opacity: 0.4; cursor: not-allowed; }
   .photo-card.revealed .photo-frame{
-    height: min(82vh, 820px);
+    flex: 1;
   }
   .photo-frame img{
     max-width: 100%;
@@ -144,7 +198,7 @@
 
   .skeleton{
     position:absolute; inset:0;
-    background: linear-gradient(100deg, var(--bg-2) 30%, #253a2e 50%, var(--bg-2) 70%);
+    background: linear-gradient(100deg, var(--bg-2) 30%, #ffffff 50%, var(--bg-2) 70%);
     background-size: 250% 100%;
     animation: shimmer 1.6s infinite;
   }
@@ -167,7 +221,7 @@
   /* ---------- guess panel ---------- */
   .guess-panel{ padding: 14px; }
   .guess-panel h2{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -178,9 +232,11 @@
   .guess-row{
     display:flex;
     gap: 8px;
+    flex-wrap: wrap;
   }
   .guess-row input{
     flex: 1;
+    min-width: 160px;
     background: var(--bg-2);
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -190,10 +246,10 @@
     font-family: var(--font-body);
   }
   .guess-row input:focus{ outline: 2px solid var(--gold); outline-offset: -1px; }
-  .guess-row input::placeholder{ color: #5b6d61; }
+  .guess-row input::placeholder{ color: #9a9ec4; }
 
   button{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 12.5px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -215,22 +271,35 @@
     border-color: var(--gold);
     font-weight: 600;
   }
-  button.primary:hover:not(:disabled){ background: #eebd5f; }
+  button.primary:hover:not(:disabled){ background: #5a76e0; }
 
   button.ghost{
     background: transparent;
     color: var(--muted);
   }
 
-  #giveUpBtn:not(:disabled), #nextBtn:not(:disabled){
-    background: #22c55e;
-    border-color: #22c55e;
-    color: #06210f;
+  #advanceBtn{
+    white-space: nowrap;
+  }
+  #advanceBtn.is-reveal:not(:disabled){
+    background: #f6c9a0;
+    border-color: #e2a568;
+    color: #7a3c12;
     font-weight: 600;
   }
-  #giveUpBtn:not(:disabled):hover, #nextBtn:not(:disabled):hover{
-    background: #3ddc84;
-    border-color: #3ddc84;
+  #advanceBtn.is-reveal:not(:disabled):hover{
+    background: #f2b986;
+    border-color: #d9954f;
+  }
+  #advanceBtn.is-next:not(:disabled){
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #3d3208;
+    font-weight: 600;
+  }
+  #advanceBtn.is-next:not(:disabled):hover{
+    background: #fcf2cc;
+    border-color: #fcf2cc;
   }
 
   .panel-foot{
@@ -268,41 +337,48 @@
     animation: slidein 0.25s ease;
   }
   @keyframes slidein{ from{ opacity:0; transform: translateY(-6px);} to{ opacity:1; transform:none; } }
-  .feed li.s-100{ border-left-color: var(--gold); }
+  .feed li.s-100{
+    border-left-color: var(--yellow);
+    border-left-width: 5px;
+    background: var(--yellow-bg);
+  }
+  .feed li.s-100 .fm b{ color: var(--yellow-dim); }
   .feed li.s-hi{ border-left-color: var(--leaf); }
+  .feed li.s-genus{ border-left-color: var(--green); }
   .feed li.s-mid{ border-left-color: var(--teal); }
   .feed li.s-lo{ border-left-color: var(--rust); }
   .feed li.s-none{ border-left-color: var(--danger); }
   .feed li.s-echo{ border-left-color: var(--teal); border-left-style: dashed; }
+  .feed li.s-echo.tier-order{ border-left-color: var(--teal); }
+  .feed li.s-echo.tier-family{ border-left-color: var(--leaf); }
+  .feed li.s-echo.tier-genus{ border-left-color: var(--green); }
+  .feed li.s-echo.tier-species{ border-left-color: var(--yellow); }
   .feed li.has-echo{
     align-items: flex-start;
-    background: rgba(224,172,69,0.18);
-    border-color: rgba(224,172,69,0.6);
-    border-left-color: var(--gold);
     border-left-width: 5px;
     animation: slidein 0.25s ease, echoPulse 1.2s ease 0.2s;
   }
   @keyframes echoPulse{
-    0%{ box-shadow: 0 0 0 0 rgba(224,172,69,0.55); }
-    55%{ box-shadow: 0 0 0 8px rgba(224,172,69,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(224,172,69,0); }
+    0%{ box-shadow: 0 0 0 0 rgba(52,84,209,0.35); }
+    55%{ box-shadow: 0 0 0 8px rgba(52,84,209,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(52,84,209,0); }
   }
-  .feed .fq{ color: var(--muted); flex: 0 0 auto; font-family: var(--font-mono); font-size: 11px; }
+  .feed .fq{ color: var(--muted); flex: 0 0 auto; font-family: var(--font-body); font-size: 11px; }
   .feed .fm{ flex: 1; }
   .feed .fm b{ color: var(--paper); }
   .echo-line{
     display: block;
     margin-top: 5px;
-    color: var(--gold);
+    color: var(--paper);
     font-weight: 500;
   }
   .echo-badge{
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: var(--gold);
+    background: var(--muted);
     color: var(--ink);
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -314,21 +390,28 @@
     vertical-align: middle;
   }
   .echo-mark{
-    background: var(--gold);
+    background: var(--muted);
     color: var(--ink);
     font-weight: 700;
     font-style: normal;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 0.9em;
     padding: 1px 6px;
     border-radius: 3px;
-    box-shadow: 0 0 0 1px rgba(224,172,69,0.5);
   }
+  .echo-badge.tier-order, .echo-mark.tier-order{ background: var(--teal); color: #ffffff; }
+  .echo-badge.tier-family, .echo-mark.tier-family{ background: var(--leaf); color: #ffffff; }
+  .echo-badge.tier-genus, .echo-mark.tier-genus{ background: var(--green); color: #ffffff; }
+  .echo-badge.tier-species, .echo-mark.tier-species{ background: var(--yellow); color: #050401; }
+  .echo-mark.tier-order{ box-shadow: 0 0 0 1px rgba(160,111,214,0.5); }
+  .echo-mark.tier-family{ box-shadow: 0 0 0 1px rgba(52,84,209,0.5); }
+  .echo-mark.tier-genus{ box-shadow: 0 0 0 1px rgba(47,158,68,0.5); }
+  .echo-mark.tier-species{ box-shadow: 0 0 0 1px rgba(240,196,25,0.6); }
 
   /* ---------- ladder / cladogram ---------- */
   .ladder-card{ padding: 16px 16px 18px; position: sticky; top: 16px; }
   .ladder-card h2{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -384,7 +467,7 @@
   .rung.revealed .rung-marker .dot{
     border-color: var(--gold);
     background: var(--gold);
-    box-shadow: 0 0 0 3px rgba(224,172,69,0.18);
+    box-shadow: 0 0 0 3px rgba(52,84,209,0.18);
   }
   .rung.revealed .rung-marker .tick{ background: var(--gold-dim); opacity: 0.85; }
 
@@ -395,7 +478,7 @@
     box-shadow: none;
   }
   .rung.revealed.auto .rung-marker .tick{ background: var(--line); opacity: 0.55; }
-  .rung.revealed.auto .rk-name{ color: #7d8e82; }
+  .rung.revealed.auto .rk-name{ color: #9498b8; }
   .rung.revealed.auto .rk-common{ color: var(--muted); }
 
   .rung-body{
@@ -412,7 +495,7 @@
 
   .rung .rk-flag{
     display: none;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 8.5px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -425,7 +508,7 @@
   .rung.revealed.auto .rk-flag{ display: inline-block; }
 
   .rung .rk-label{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 9.5px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -437,7 +520,7 @@
     font-family: var(--font-display);
     font-style: italic;
     font-size: 16px;
-    color: #4a5c50;
+    color: #4c5286;
     transition: color 0.2s;
   }
   .rung .rk-common{
@@ -450,6 +533,66 @@
   .rung.revealed .rk-name{ color: var(--paper); }
   .rung.revealed .rk-common{ color: var(--leaf); }
 
+  .rung.order-hit .rung-marker .dot{
+    border-color: var(--teal);
+    background: var(--teal);
+    box-shadow: 0 0 0 3px var(--teal-bg);
+  }
+  .rung.order-hit .rung-marker .tick{ background: var(--teal); opacity: 0.85; }
+  .rung.order-hit .rung-body{
+    background: var(--teal-bg);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    margin: -4px -8px;
+  }
+  .rung.order-hit .rk-name{ color: var(--teal-dim); }
+  .rung.order-hit .rk-common{ color: var(--teal-dim); }
+
+  .rung.family-hit .rung-marker .dot{
+    border-color: var(--leaf);
+    background: var(--leaf);
+    box-shadow: 0 0 0 3px var(--leaf-bg);
+  }
+  .rung.family-hit .rung-marker .tick{ background: var(--leaf); opacity: 0.85; }
+  .rung.family-hit .rung-body{
+    background: var(--leaf-bg);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    margin: -4px -8px;
+  }
+  .rung.family-hit .rk-name{ color: var(--leaf-dim); }
+  .rung.family-hit .rk-common{ color: var(--leaf-dim); }
+
+  .rung.genus-hit .rung-marker .dot{
+    border-color: var(--green);
+    background: var(--green);
+    box-shadow: 0 0 0 3px var(--green-bg);
+  }
+  .rung.genus-hit .rung-marker .tick{ background: var(--green); opacity: 0.85; }
+  .rung.genus-hit .rung-body{
+    background: var(--green-bg);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    margin: -4px -8px;
+  }
+  .rung.genus-hit .rk-name{ color: var(--green-dim); }
+  .rung.genus-hit .rk-common{ color: var(--green-dim); }
+
+  .rung.species-hit .rung-marker .dot{
+    border-color: var(--yellow);
+    background: var(--yellow);
+    box-shadow: 0 0 0 3px var(--yellow-bg);
+  }
+  .rung.species-hit .rung-marker .tick{ background: var(--yellow); opacity: 0.85; }
+  .rung.species-hit .rung-body{
+    background: var(--yellow-bg);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    margin: -4px -8px;
+  }
+  .rung.species-hit .rk-name{ color: var(--yellow-dim); }
+  .rung.species-hit .rk-common{ color: var(--yellow-dim); }
+
   /* ---------- solution folded panel ---------- */
   .reveal-details{
     margin-top: 16px;
@@ -461,7 +604,7 @@
   }
   .reveal-details summary{
     padding: 12px 8px;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 11px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -485,7 +628,7 @@
     transform: rotate(90deg);
   }
   .reveal-details summary:hover{
-    color: #eebd5f;
+    color: #3454d1;
   }
 
   .reveal-box{
@@ -529,7 +672,7 @@
     font-size: 13px;
   }
   .reveal-headline .rh-credit{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 9.5px;
     color: var(--muted);
     margin-top: 3px;
@@ -552,7 +695,7 @@
 
   .reveal-section{ margin-top: 14px; }
   .reveal-section h3{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -615,7 +758,7 @@
     align-items:center;
     gap: 9px;
     margin: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 11.5px;
   }
   .region-row label{
@@ -630,7 +773,7 @@
     color: var(--paper);
     border-radius: var(--radius);
     padding: 7px 10px;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 12px;
     cursor: pointer;
   }
@@ -643,7 +786,7 @@
     align-items:center;
     gap: 11px;
     margin: 0;
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 11.5px;
   }
   .difficulty-row label{
@@ -687,7 +830,7 @@
     cursor: pointer;
   }
   .difficulty-row input[type="range"]:focus{ outline: none; }
-  .difficulty-row input[type="range"]:focus::-webkit-slider-thumb{ box-shadow: 0 0 0 3px rgba(224,172,69,0.35); }
+  .difficulty-row input[type="range"]:focus::-webkit-slider-thumb{ box-shadow: 0 0 0 3px rgba(52,84,209,0.35); }
   .diff-label{
     color: var(--gold);
     font-size: 11px;
@@ -695,9 +838,9 @@
   }
 
   .err-banner{
-    background: rgba(163,64,44,0.15);
+    background: rgba(179,18,63,0.08);
     border: 1px solid var(--danger);
-    color: #f0c8ba;
+    color: #7a0c2c;
     padding: 10px 12px;
     border-radius: var(--radius);
     font-size: 13px;
@@ -741,7 +884,7 @@
     flex: 0 0 auto;
   }
   .pick-head-text .pk-eyebrow{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 10.5px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -827,7 +970,7 @@
     .pick-body{ flex: 1; min-height: 0; overflow-y: auto; }
   }
   .pick-status{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 12px;
     color: var(--muted);
     padding: 30px 0;
@@ -892,11 +1035,11 @@
   .pick-cell.wrong .pc-label{ color: var(--muted); }
   .pick-cell.correct{
     opacity: 1;
-    border-color: #22c55e;
-    box-shadow: 0 0 0 1px #22c55e;
+    border-color: #3454d1;
+    box-shadow: 0 0 0 1px #3454d1;
   }
-  .pick-cell.correct .pc-label{ color: #3ddc84; }
-  .pick-cell.correct .pc-label i{ color: #3ddc84; }
+  .pick-cell.correct .pc-label{ color: #3454d1; }
+  .pick-cell.correct .pc-label i{ color: #3454d1; }
   .pick-cell:disabled:not(.wrong):not(.correct){ pointer-events: none; }
   .pick-foot{
     display:flex;
@@ -908,7 +1051,7 @@
     flex: 0 0 auto;
   }
   .pick-progress{
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     font-size: 10.5px;
     color: var(--muted);
     letter-spacing: 0.06em;
@@ -930,7 +1073,7 @@
       <div class="region-row">
         <label for="regionSelect">Region</label>
         <select id="regionSelect">
-          <option value="">🌍 Everywhere</option>
+          <option value="">Everywhere</option>
         </select>
         <span class="region-status" id="regionStatus"></span>
       </div>
@@ -950,6 +1093,19 @@
   <main class="grid">
     <div class="left-col">
       <div class="card photo-card">
+        <button class="pick-corner" id="pickBtn" disabled title="Pick me — multiple choice" aria-label="Pick me — multiple choice">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="9.25" y="2" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="16.5" y="2" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="2" y="9.25" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="9.25" y="9.25" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="2" y="16.5" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1"></rect>
+            <rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1"></rect>
+          </svg>
+        </button>
         <div class="photo-frame" id="photoFrame">
           <div class="skeleton" id="skeleton"></div>
         </div>
@@ -964,23 +1120,19 @@
       <div class="card guess-panel">
         <h2>Your guess</h2>
         <div class="guess-row">
-          <input type="text" id="guessInput" placeholder="e.g. honeyeater, Acanthiza, Yellow-rumped Thornbill…" autocomplete="off" disabled>
+          <input type="text" id="guessInput" placeholder=" " autocomplete="off" disabled>
           <button class="primary" id="guessBtn" disabled>Guess</button>
+          <button class="is-reveal" id="advanceBtn" disabled>Reveal species</button>
         </div>
         <div class="panel-foot">
           <span class="hint" id="hintText"></span>
-          <div style="display:flex; gap:8px;">
-            <button class="ghost" id="pickBtn" disabled>Pick me</button>
-            <button class="ghost" id="giveUpBtn" disabled>Reveal answer</button>
-            <button id="nextBtn" disabled>Next bird →</button>
-          </div>
         </div>
         <ul class="feed" id="feed"></ul>
       </div>
 
       <div class="card ladder-card">
         <h2>Taxonomic ladder</h2>
-        <div class="best-line" id="bestLine">Make a guess to start climbing.</div>
+        <div class="best-line" id="bestLine">Guess to narrow down the branches.</div>
         <div class="ladder" id="ladder"></div>
         
         <!-- Collapsible solution panel -->
@@ -1015,10 +1167,6 @@
       </div>
     </div>
   </div>
-
-  <footer class="credits">
-    Photos &amp; taxonomy from <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a> observations, used under their respective licenses · inspired by <a href="https://simonrolph.github.io/iNatGuessr/" target="_blank" rel="noopener">iNatGuessr</a>
-  </footer>
 </div>
 
 <script>
@@ -1066,8 +1214,7 @@
     guessInput: document.getElementById("guessInput"),
     guessBtn: document.getElementById("guessBtn"),
     pickBtn: document.getElementById("pickBtn"),
-    giveUpBtn: document.getElementById("giveUpBtn"),
-    nextBtn: document.getElementById("nextBtn"),
+    advanceBtn: document.getElementById("advanceBtn"),
     pickOverlay: document.getElementById("pickOverlay"),
     pickPhotoImg: document.getElementById("pickPhotoImg"),
     pickTitle: document.getElementById("pickTitle"),
@@ -1266,7 +1413,7 @@
       renderPhoto(obs);
       renderLadder();
       el.feed.innerHTML = "";
-      el.bestLine.textContent = "Make a guess to start climbing.";
+      el.bestLine.textContent = "Guess to narrow down the branches.";
       el.revealDetails.classList.remove("show");
       el.revealDetails.open = false;
       setLoading(false);
@@ -1277,14 +1424,30 @@
     }
   }
 
+  function updateAdvanceButton(){
+    if(state && state.finished){
+      el.advanceBtn.textContent = "Next bird →";
+      el.advanceBtn.classList.add("is-next");
+      el.advanceBtn.classList.remove("is-reveal");
+    }else{
+      el.advanceBtn.textContent = "Reveal species";
+      el.advanceBtn.classList.add("is-reveal");
+      el.advanceBtn.classList.remove("is-next");
+    }
+  }
+
   function resetPanel(){
     el.guessInput.value = "";
     el.guessInput.disabled = true;
     el.guessBtn.disabled = true;
     el.pickBtn.disabled = true;
-    el.giveUpBtn.disabled = true;
-    el.nextBtn.disabled = true;
-    el.nextBtn.textContent = "Next bird →";
+    el.advanceBtn.disabled = true;
+    // Note: this runs before `state` is replaced with the new round's state
+    // object, so we can't rely on updateAdvanceButton() reading state.finished
+    // here — it would still see the just-finished previous round. Force it.
+    el.advanceBtn.textContent = "Reveal species";
+    el.advanceBtn.classList.add("is-reveal");
+    el.advanceBtn.classList.remove("is-next");
     el.photoCard.classList.remove("revealed");
   }
 
@@ -1297,7 +1460,7 @@
       el.guessInput.disabled = false;
       el.guessBtn.disabled = false;
       el.pickBtn.disabled = false;
-      el.giveUpBtn.disabled = false;
+      el.advanceBtn.disabled = false;
       el.guessInput.focus();
     }
   }
@@ -1356,6 +1519,10 @@
         const guessed = i <= state.bestIdx;
         rung.classList.add("revealed");
         rung.classList.toggle("auto", !guessed);
+        rung.classList.toggle("order-hit", guessed && node.rank === "order");
+        rung.classList.toggle("family-hit", guessed && node.rank === "family");
+        rung.classList.toggle("genus-hit", guessed && node.rank === "genus");
+        rung.classList.toggle("species-hit", guessed && node.rank === "species");
         rung.querySelector(".rk-name").textContent = node.name;
         rung.querySelector(".rk-common").textContent = node.common ? node.common : "";
       }
@@ -1444,7 +1611,15 @@
     if(!state || !state.chain || !state.chain.length) return null;
     let bestNode = null, bestTier = Infinity, bestIdx = -1;
     state.chain.forEach((node, i) => {
-      const tier = matchTier(query, chainNodeAsTaxon(node));
+      let tier = matchTier(query, chainNodeAsTaxon(node));
+      // The species rung shows the parent species' common name, but the
+      // actually-observed taxon can be a subspecies with a more specific
+      // common name (e.g. "Common Australian White Ibis") — a guess close
+      // to that name should still be credited for the species.
+      if(i === state.chain.length - 1 && state.detail){
+        const aliasTier = matchTier(query, state.detail);
+        if(aliasTier < tier) tier = aliasTier;
+      }
       if(tier < bestTier || (tier === bestTier && i > bestIdx)){
         bestTier = tier;
         bestNode = node;
@@ -1500,7 +1675,7 @@
     if(rank === "species") return exactSpecies
       ? { text:"Exact species.", cls:"s-100" }
       : { text:"Correct species.", cls:"s-100" };
-    if(rank === "genus") return { text:"Correct genus.", cls:"s-hi" };
+    if(rank === "genus") return { text:"Correct genus.", cls:"s-genus" };
     if(rank === "family") return { text:"Correct family.", cls:"s-hi" };
     if(rank === "order") return { text:"Correct order.", cls:"s-mid" };
     if(rank === "class") return { text:"Correct class only.", cls:"s-lo" };
@@ -1529,27 +1704,40 @@
 
   function findSpeciesWordOverlap(query, speciesNode, achievedNode){
     if(!speciesNode || !speciesNode.common) return null;
-    const qTokensArr = tokenize(query).map(normalizeToken).filter(w => w.length > 2);
-    if(!qTokensArr.length) return null;
+    const qTokensRaw = tokenize(query).filter(w => w.length > 2);
+    if(!qTokensRaw.length) return null;
+    const qTokensArr = qTokensRaw.map(normalizeToken);
     const qTokens = new Set(qTokensArr);
     const achievedTokens = tokenize(achievedNode && achievedNode.common ? achievedNode.common : "").map(normalizeToken);
     const achievedSet = new Set(achievedTokens);
-    const targetTokens = tokenize(speciesNode.common).map(normalizeToken);
+    const targetTokensRaw = tokenize(speciesNode.common);
+    const targetTokens = targetTokensRaw.map(normalizeToken);
 
     if(qTokensArr.length > 1 && containsSubsequence(targetTokens, qTokensArr) && !containsSubsequence(achievedTokens, qTokensArr)){
-      return qTokensArr.join(" ");
+      return qTokensRaw.join(" ");
     }
 
-    for(const w of targetTokens){
-      if(qTokens.has(w) && !achievedSet.has(w)) return w;
+    for(let i = 0; i < targetTokens.length; i++){
+      const w = targetTokens[i];
+      if(qTokens.has(w) && !achievedSet.has(w)) return targetTokensRaw[i];
     }
 
-    for(const w of targetTokens){
+    for(let i = 0; i < targetTokens.length; i++){
+      const w = targetTokens[i];
       if(achievedSet.has(w)) continue;
-      for(const q of qTokens){
-        if(w.length > q.length && (w.endsWith(q) || w.startsWith(q))) return w;
+      for(let j = 0; j < qTokensArr.length; j++){
+        const q = qTokensArr[j];
+        if(w.length > q.length && (w.endsWith(q) || w.startsWith(q))) return qTokensRaw[j];
       }
     }
+    return null;
+  }
+
+  function rankTierName(rank){
+    if(rank === "order") return "order";
+    if(rank === "family") return "family";
+    if(rank === "genus") return "genus";
+    if(rank === "species") return "species";
     return null;
   }
 
@@ -1562,9 +1750,11 @@
       const echo = findNameEcho(query, state.chain);
       if(echo){
         hasEcho = true;
+        const tier = rankTierName(echo.node.rank);
+        const tierCls = tier ? ` tier-${tier}` : "";
         fb = {
-          text: `<div class="echo-line"><span class="echo-badge">🔎 Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
-          cls: "s-echo"
+          text: `<div class="echo-line"><span class="echo-badge${tierCls}">Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark${tierCls}">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
+          cls: "s-echo" + tierCls
         };
       }
     } else if(!isExactSpecies){
@@ -1572,7 +1762,7 @@
       const overlapWord = findSpeciesWordOverlap(query, speciesNode, state.chain[idx]);
       if(overlapWord){
         hasEcho = true;
-        fb = { text: `${fb.text}<div class="echo-line"><span class="echo-badge">🔎 Name match</span>Also close — the species name echoes <mark class="echo-mark">${overlapWord}</mark>.</div>`, cls: fb.cls };
+        fb = { text: `${fb.text}<div class="echo-line"><span class="echo-badge tier-species">Name match</span>Also close — the species name echoes <mark class="echo-mark tier-species">${overlapWord}</mark>.</div>`, cls: fb.cls };
       }
     }
     li.className = fb.cls + (hasEcho ? " has-echo" : "");
@@ -1767,12 +1957,11 @@
     el.guessInput.disabled = true;
     el.guessBtn.disabled = true;
     el.pickBtn.disabled = true;
-    el.giveUpBtn.disabled = true;
-    el.nextBtn.disabled = false;
-    el.nextBtn.textContent = "Next bird →";
+    el.advanceBtn.disabled = false;
+    updateAdvanceButton();
     closePickOverlay();
 
-    setTimeout(() => el.nextBtn.focus(), 0);
+    setTimeout(() => el.advanceBtn.focus(), 0);
   }
 
   // ---------- pick-me (multiple choice) ----------
@@ -1853,7 +2042,7 @@
     el.guessBtn.disabled = true;
     el.guessInput.disabled = true;
     el.pickBtn.disabled = true;
-    el.giveUpBtn.disabled = true;
+    el.advanceBtn.disabled = true;
   }
 
   function closePickOverlay(){
@@ -1863,7 +2052,7 @@
       el.guessBtn.disabled = false;
       el.guessInput.disabled = false;
       el.pickBtn.disabled = false;
-      el.giveUpBtn.disabled = false;
+      el.advanceBtn.disabled = false;
     }
   }
 
@@ -2054,11 +2243,14 @@
   // ---------- events ----------
   el.guessBtn.addEventListener("click", submitGuess);
   el.guessInput.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); submitGuess(); } });
-  el.giveUpBtn.addEventListener("click", () => finishRound(false));
+  el.advanceBtn.addEventListener("click", () => {
+    if(!state) return;
+    if(state.finished){ loadNewRound(); }
+    else{ finishRound(false); }
+  });
   el.pickBtn.addEventListener("click", startPickMe);
   el.pickCloseBtn.addEventListener("click", closePickOverlay);
   el.pickRevealBtn.addEventListener("click", () => { closePickOverlay(); finishRound(false); });
-  el.nextBtn.addEventListener("click", loadNewRound);
   el.regionSelect.addEventListener("change", onRegionChange);
   el.difficultySlider.addEventListener("input", () => {
     difficulty = Number(el.difficultySlider.value);
