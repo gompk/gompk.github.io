@@ -1275,6 +1275,7 @@
   let mysteryFrameHTML = "";
   let hoverToken = 0;
   const taxonPhotoCache = {};
+  const taxonPhotoResolved = {};
 
   const el = {
     photoCard: document.querySelector(".photo-card"),
@@ -1323,9 +1324,15 @@
   function pick(arr){ return arr[rnd(0, arr.length - 1)]; }
 
   async function fetchJSON(url){
-    const res = await fetch(url);
-    if(!res.ok) throw new Error("Request failed (" + res.status + ")");
-    return res.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try{
+      const res = await fetch(url, { signal: controller.signal });
+      if(!res.ok) throw new Error("Request failed (" + res.status + ")");
+      return await res.json();
+    }finally{
+      clearTimeout(timeoutId);
+    }
   }
 
   // ---------- fetching a random bird observation ----------
@@ -1410,14 +1417,24 @@
       const pool = await fetchSpeciesPool();
       if(!pool.length) return fetchRandomObservationUniform();
 
-      const tried = new Set();
       const maxTries = Math.min(5, pool.length);
-      for(let i = 0; i < maxTries; i++){
+      const tried = new Set();
+      const candidates = [];
+      while(candidates.length < maxTries){
         const candidate = pickWeightedSpecies(pool, difficulty);
         if(tried.has(candidate.taxon.id)) continue;
         tried.add(candidate.taxon.id);
-        const results = await fetchObservationsForTaxon(candidate.taxon.id);
-        if(results.length) return pick(results);
+        candidates.push(candidate);
+      }
+
+      // These lookups don't depend on each other — fire them all at once
+      // instead of waiting on each in turn, so a round load takes as long
+      // as the slowest of the five rather than the sum of all five.
+      const settled = await Promise.allSettled(
+        candidates.map(c => fetchObservationsForTaxon(c.taxon.id))
+      );
+      for(const result of settled){
+        if(result.status === "fulfilled" && result.value.length) return pick(result.value);
       }
       return fetchRandomObservationUniform();
     }catch(e){
@@ -1463,13 +1480,17 @@
   }
 
   // ---------- round lifecycle ----------
+  let roundToken = 0;
   async function loadNewRound(){
+    const myToken = ++roundToken;
     clearError();
     resetPanel();
     setLoading(true);
     try{
       const obs = await fetchRandomObservation();
+      if(myToken !== roundToken) return; // a newer round request superseded this one
       const detail = await fetchTaxonDetail(obs.taxon.id);
+      if(myToken !== roundToken) return;
       const chain = buildChain(detail);
       if(chain.length < 2) throw new Error("Incomplete taxonomy, trying another…");
 
@@ -1490,9 +1511,10 @@
       el.revealDetails.open = false;
       setLoading(false);
     }catch(e){
+      if(myToken !== roundToken) return;
       console.error(e);
       showError("Trouble reaching iNaturalist — " + e.message + " Trying again…");
-      setTimeout(loadNewRound, 1200);
+      setTimeout(() => { if(myToken === roundToken) loadNewRound(); }, 1200);
     }
   }
 
@@ -1582,7 +1604,7 @@
         </div>
       `;
       el.ladder.appendChild(div);
-      div.addEventListener("mouseenter", () => { if(div.classList.contains("revealed")) showTierGrid(node); });
+      div.addEventListener("mouseenter", () => { if(div.classList.contains("revealed")) scheduleTierGrid(node); });
       div.addEventListener("mouseleave", () => hideTierGrid());
       div.addEventListener("focus", () => { if(div.classList.contains("revealed")) showTierGrid(node); });
       div.addEventListener("blur", () => hideTierGrid());
@@ -1641,6 +1663,7 @@
         // Warm the browser's image cache now, so when the grid is actually
         // shown on hover the <img> tags paint instantly instead of buffering.
         photos.forEach(p => { const img = new Image(); img.src = photoUrlAtSize(p, "medium"); });
+        taxonPhotoResolved[taxonId] = photos;
         return photos;
       }catch(e){
         console.error(e);
@@ -1651,33 +1674,59 @@
     return promise;
   }
 
+  function renderTierGrid(node, photos){
+    if(!photos.length){
+      el.photoFrame.innerHTML = mysteryFrameHTML;
+      return;
+    }
+    const cols = photos.length >= 9 ? 4 : 3;
+    const rows = Math.ceil(photos.length / cols);
+    const imgs = photos.map(p => {
+      const src = photoUrlAtSize(p, "medium").replace(/"/g, "&quot;");
+      return `<img src="${src}" alt="" loading="lazy">`;
+    }).join("");
+    const label = RANK_LABELS[node.rank] || node.rank;
+    el.photoFrame.innerHTML = `
+      <div class="tier-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">${imgs}</div>
+      <div class="tier-grid-label">${label} <i>${node.name}</i></div>
+    `;
+  }
+
   function showTierGrid(node){
     if(!node || !node.id) return;
     const myToken = ++hoverToken;
     if(!mysteryFrameHTML) mysteryFrameHTML = el.photoFrame.innerHTML;
-    el.photoFrame.innerHTML = '<div class="skeleton"></div>';
 
+    // Reveal already warmed this taxon in the background — paint instantly,
+    // no skeleton, no network wait.
+    const cached = taxonPhotoResolved[node.id];
+    if(cached){
+      renderTierGrid(node, cached);
+      return;
+    }
+
+    el.photoFrame.innerHTML = '<div class="skeleton"></div>';
     fetchTaxonPhotoGrid(node.id).then(photos => {
       if(myToken !== hoverToken) return; // hovered away already
-      if(!photos.length){
-        el.photoFrame.innerHTML = mysteryFrameHTML;
-        return;
-      }
-      const cols = photos.length >= 9 ? 4 : 3;
-      const rows = Math.ceil(photos.length / cols);
-      const imgs = photos.map(p => {
-        const src = photoUrlAtSize(p, "medium").replace(/"/g, "&quot;");
-        return `<img src="${src}" alt="" loading="lazy">`;
-      }).join("");
-      const label = RANK_LABELS[node.rank] || node.rank;
-      el.photoFrame.innerHTML = `
-        <div class="tier-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">${imgs}</div>
-        <div class="tier-grid-label">${label} <i>${node.name}</i></div>
-      `;
+      renderTierGrid(node, photos);
     });
   }
 
+  let tierHoverTimer = null;
+  function scheduleTierGrid(node){
+    clearTimeout(tierHoverTimer);
+    // If we already have the images warmed, show them immediately — the
+    // delay only exists to stop a fast mouse sweep across the ladder from
+    // firing a fetch/skeleton for every rung it passes over.
+    if(taxonPhotoResolved[node.id]){
+      showTierGrid(node);
+      return;
+    }
+    tierHoverTimer = setTimeout(() => showTierGrid(node), 90);
+  }
+
   function hideTierGrid(){
+    clearTimeout(tierHoverTimer);
     hoverToken++;
     if(mysteryFrameHTML) el.photoFrame.innerHTML = mysteryFrameHTML;
   }
