@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AvID</title>
+<title>AvID - Field ID</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -442,7 +442,39 @@
     display: flex;
     gap: 12px;
     padding: 7px 4px 7px 0;
+    cursor: default;
   }
+  .rung.revealed{ cursor: pointer; }
+
+  .tier-grid{
+    position: absolute;
+    inset: 0;
+    display: grid;
+    gap: 0;
+    background: var(--bg-2);
+    animation: fadein 0.2s ease;
+  }
+  .tier-grid img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .tier-grid-label{
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    z-index: 2;
+    background: rgba(20,20,30,0.72);
+    backdrop-filter: blur(3px);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    pointer-events: none;
+  }
+  .tier-grid-label i{ opacity: 0.75; margin-left: 5px; }
 
   .rung-marker{
     flex: 0 0 16px;
@@ -1240,6 +1272,9 @@
 
   // ---------- state ----------
   let state = null;
+  let mysteryFrameHTML = "";
+  let hoverToken = 0;
+  const taxonPhotoCache = {};
 
   const el = {
     photoCard: document.querySelector(".photo-card"),
@@ -1505,11 +1540,14 @@
   function renderPhoto(obs){
     const url = photoUrl(obs);
     el.photoFrame.innerHTML = '<div class="skeleton" id="skeleton"></div>';
+    mysteryFrameHTML = "";
+    hoverToken++;
     const img = new Image();
     img.alt = "Mystery bird observation";
     img.onload = () => {
       el.photoFrame.innerHTML = "";
       el.photoFrame.appendChild(img);
+      mysteryFrameHTML = el.photoFrame.innerHTML;
     };
     img.onerror = () => {
       loadNewRound();
@@ -1531,6 +1569,7 @@
       const div = document.createElement("div");
       div.className = "rung";
       div.dataset.idx = i;
+      div.tabIndex = 0;
       div.innerHTML = `
         <div class="rung-marker"><span class="dot"></span><span class="tick"></span></div>
         <div class="rung-body">
@@ -1543,6 +1582,10 @@
         </div>
       `;
       el.ladder.appendChild(div);
+      div.addEventListener("mouseenter", () => { if(div.classList.contains("revealed")) showTierGrid(node); });
+      div.addEventListener("mouseleave", () => hideTierGrid());
+      div.addEventListener("focus", () => { if(div.classList.contains("revealed")) showTierGrid(node); });
+      div.addEventListener("blur", () => hideTierGrid());
     });
   }
 
@@ -1562,6 +1605,7 @@
         rung.classList.toggle("species-hit", guessed && node.rank === "species");
         rung.querySelector(".rk-name").textContent = node.name;
         rung.querySelector(".rk-common").textContent = node.common ? node.common : "";
+        if(node.id) fetchTaxonPhotoGrid(node.id);
       }
     });
     if(state.bestIdx >= 0 && state.chain[state.bestIdx] && !LADDER_HIDDEN_RANKS.has(state.chain[state.bestIdx].rank)){
@@ -1572,6 +1616,70 @@
     } else {
       el.bestLine.textContent = "Make a guess to start climbing.";
     }
+  }
+
+  // ---------- tier hover: photo grid ----------
+  function photoUrlAtSize(p, size){
+    let url = p.url || p.medium_url || p.large_url || p.square_url || p.small_url;
+    if(!url) return "";
+    return url.replace(/(square|small|medium|large|original)\.(jpg|jpeg|png|gif)/i, `${size}.$2`);
+  }
+
+  function fetchTaxonPhotoGrid(taxonId){
+    if(taxonPhotoCache[taxonId]) return taxonPhotoCache[taxonId];
+    const promise = (async () => {
+      try{
+        const qs = new URLSearchParams({
+          taxon_id: String(taxonId), photos: "true", quality_grade: "research",
+          per_page: "12", order_by: "votes", order: "desc"
+        });
+        const data = await fetchJSON(`${API}/observations?${qs.toString()}`);
+        const photos = (data.results || [])
+          .filter(o => o.photos && o.photos.length)
+          .map(o => o.photos[0])
+          .filter(p => p.medium_url || p.square_url || p.url);
+        // Warm the browser's image cache now, so when the grid is actually
+        // shown on hover the <img> tags paint instantly instead of buffering.
+        photos.forEach(p => { const img = new Image(); img.src = photoUrlAtSize(p, "medium"); });
+        return photos;
+      }catch(e){
+        console.error(e);
+        return [];
+      }
+    })();
+    taxonPhotoCache[taxonId] = promise;
+    return promise;
+  }
+
+  function showTierGrid(node){
+    if(!node || !node.id) return;
+    const myToken = ++hoverToken;
+    if(!mysteryFrameHTML) mysteryFrameHTML = el.photoFrame.innerHTML;
+    el.photoFrame.innerHTML = '<div class="skeleton"></div>';
+
+    fetchTaxonPhotoGrid(node.id).then(photos => {
+      if(myToken !== hoverToken) return; // hovered away already
+      if(!photos.length){
+        el.photoFrame.innerHTML = mysteryFrameHTML;
+        return;
+      }
+      const cols = photos.length >= 9 ? 4 : 3;
+      const rows = Math.ceil(photos.length / cols);
+      const imgs = photos.map(p => {
+        const src = photoUrlAtSize(p, "medium").replace(/"/g, "&quot;");
+        return `<img src="${src}" alt="" loading="lazy">`;
+      }).join("");
+      const label = RANK_LABELS[node.rank] || node.rank;
+      el.photoFrame.innerHTML = `
+        <div class="tier-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">${imgs}</div>
+        <div class="tier-grid-label">${label} <i>${node.name}</i></div>
+      `;
+    });
+  }
+
+  function hideTierGrid(){
+    hoverToken++;
+    if(mysteryFrameHTML) el.photoFrame.innerHTML = mysteryFrameHTML;
   }
 
   // ---------- taxon resolution + scoring ----------
