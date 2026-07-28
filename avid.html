@@ -687,17 +687,6 @@
   .reveal-headline{
     margin-bottom: 14px;
   }
-  .reveal-headline .rh-photo{
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 320px;
-    object-fit: contain;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    background: var(--bg-2);
-    margin-bottom: 10px;
-  }
   .reveal-headline .rh-name{
     font-family: var(--font-display);
     font-size: 20px;
@@ -709,28 +698,6 @@
     color: var(--leaf);
     font-size: 13px;
   }
-  .reveal-headline .rh-credit{
-    font-family: var(--font-body);
-    font-size: 9.5px;
-    color: var(--muted);
-    margin-top: 3px;
-  }
-
-  .more-photos-grid{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 7px;
-  }
-  .more-photos-grid img{
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    background: var(--bg-2);
-    display: block;
-  }
-
   .reveal-section{ margin-top: 14px; }
   .reveal-section h3{
     font-family: var(--font-body);
@@ -1201,7 +1168,7 @@
         <div class="ladder" id="ladder"></div>
         
         <!-- Collapsible solution panel -->
-        <details class="reveal-details" id="revealDetails">
+        <details class="reveal-details" id="revealDetails" open>
           <summary id="revealSummary">Species Information & Solution</summary>
           <div class="reveal-box" id="revealBox"></div>
         </details>
@@ -1508,7 +1475,7 @@
       el.feed.innerHTML = "";
       el.bestLine.textContent = "Guess to narrow down the branches.";
       el.revealDetails.classList.remove("show");
-      el.revealDetails.open = false;
+      el.revealDetails.open = true;
       setLoading(false);
     }catch(e){
       if(myToken !== roundToken) return;
@@ -2030,54 +1997,20 @@
       return genusDetail.children
         .filter(c => c.id !== detail.id && c.rank === "species")
         .sort((a, b) => (b.observations_count || 0) - (a.observations_count || 0))
-        .slice(0, 6);
+        .slice(0, 3);
     }catch(e){
       console.error(e);
       return [];
     }
   }
 
-  async function fetchGalleryPhotos(detail, primaryObsId){
-    const fromTaxon = (detail.taxon_photos || [])
-      .map(tp => tp.photo)
-      .filter(p => p && (p.medium_url || p.url));
-
-    if(fromTaxon.length >= 4) return fromTaxon.slice(0, 8);
-
-    try{
-      const qs = new URLSearchParams({
-        taxon_id: String(detail.id), photos: "true", quality_grade: "research",
-        per_page: "12", order_by: "votes", order: "desc"
-      });
-      const data = await fetchJSON(`${API}/observations?${qs.toString()}`);
-      const extra = (data.results || [])
-        .filter(o => o.id !== primaryObsId && o.photos && o.photos.length)
-        .map(o => o.photos[0]);
-      const seen = new Set();
-      return fromTaxon.concat(extra).filter(p => {
-        const key = p.id || p.url || p.medium_url;
-        if(seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      }).slice(0, 8);
-    }catch(e){
-      console.error(e);
-      return fromTaxon;
-    }
-  }
-
   function renderRevealDetails(state, solved){
     const detail = state.detail;
-    const photo = detail.default_photo;
 
-    const headline = photo
-      ? `<div class="reveal-headline">
-          <img class="rh-photo" src="${(photo.medium_url || photo.square_url || '').replace(/"/g, '&quot;')}" alt="">
+    const headline = `<div class="reveal-headline">
           <div class="rh-name">${detail.preferred_common_name || detail.name}</div>
           <div class="rh-sci">${detail.name}</div>
-          <div class="rh-credit">${photo.attribution || ""}</div>
-        </div>`
-      : `<div class="reveal-headline"><div class="rh-name">${detail.preferred_common_name || detail.name}</div></div>`;
+        </div>`;
 
     const aboutText = detail.wikipedia_summary ? truncate(stripHtml(detail.wikipedia_summary), 420) : "";
     const about = aboutText
@@ -2093,24 +2026,12 @@
         : `Answer revealed.`
       } <a href="${state.obs.uri}" target="_blank" rel="noopener">View this observation ↗</a></div>
       ${headline}
-      <div class="reveal-section" id="morePhotosSection"></div>
       ${about}
       <div class="reveal-section" id="similarSection">
         <h3>Often confused with</h3>
         <div class="reveal-note">Looking up other species in the same genus…</div>
       </div>
     `;
-
-    fetchGalleryPhotos(detail, state.obs.id).then(photos => {
-      const section = document.getElementById("morePhotosSection");
-      if(!section) return;
-      if(!photos.length) return;
-      const imgs = photos.map(p => {
-        const thumb = (p.small_url || p.medium_url || p.square_url || p.url || "").replace(/"/g, "&quot;");
-        return `<img src="${thumb}" alt="" loading="lazy">`;
-      }).join("");
-      section.innerHTML = `<h3>More photos of this species</h3><div class="more-photos-grid">${imgs}</div>`;
-    });
 
     fetchSimilarSpecies(detail).then(similar => {
       const section = document.getElementById("similarSection");
@@ -2142,7 +2063,7 @@
 
     // Dynamic Summary Text
     const name = state.detail.preferred_common_name || state.detail.name;
-    el.revealSummary.textContent = solved ? `Solved: ${name} (Click to expand)` : `Revealed: ${name} (Click to expand)`;
+    el.revealSummary.textContent = solved ? `Solved: ${name}` : `Revealed: ${name}`;
 
     el.revealDetails.classList.add("show");
     renderRevealDetails(state, solved);
