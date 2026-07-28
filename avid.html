@@ -904,6 +904,33 @@
     margin: 0;
     color: var(--paper);
   }
+  .pick-head-right{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+  .pick-supraclade{
+    text-align: right;
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+  .pick-supraclade .ps-rank{
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leaf);
+    margin: 0 0 4px;
+  }
+  .pick-supraclade .ps-name{
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--paper);
+    margin: 0;
+  }
   .pick-close{
     background: transparent;
     border: 1px solid var(--line);
@@ -1157,7 +1184,10 @@
           <p class="pk-eyebrow" id="pickEyebrow">Multiple choice</p>
           <h3 id="pickTitle">Pick the family</h3>
         </div>
-        <button class="pick-close" id="pickCloseBtn" aria-label="Close">✕</button>
+        <div class="pick-head-right">
+          <div class="pick-supraclade" id="pickSupraclade"></div>
+          <button class="pick-close" id="pickCloseBtn" aria-label="Close">✕</button>
+        </div>
       </div>
       <div class="pick-main">
         <div class="pick-photo">
@@ -1225,6 +1255,7 @@
     pickPhotoImg: document.getElementById("pickPhotoImg"),
     pickTitle: document.getElementById("pickTitle"),
     pickEyebrow: document.getElementById("pickEyebrow"),
+    pickSupraclade: document.getElementById("pickSupraclade"),
     pickBody: document.getElementById("pickBody"),
     pickProgress: document.getElementById("pickProgress"),
     pickCloseBtn: document.getElementById("pickCloseBtn"),
@@ -1972,7 +2003,7 @@
   }
 
   // ---------- pick-me (multiple choice) ----------
-  const PICK_RANKS = ["family", "genus", "species"];
+  const PICK_RANKS = ["order", "family", "genus", "species"];
   let pickBusyId = 0; 
 
   function rankIndexInRanks(rank){ return RANKS.indexOf(rank); }
@@ -2074,6 +2105,17 @@
     await openPickGrid(rank);
   }
 
+  function setSupracladeLabel(rank){
+    const idx = RANKS.indexOf(rank);
+    const supraRank = idx > 0 ? RANKS[idx - 1] : null;
+    const supraTaxon = supraRank ? state.fullByRank[supraRank] : null;
+    if(supraTaxon){
+      el.pickSupraclade.innerHTML = `<p class="ps-rank">${RANK_LABELS[supraRank]}</p><h3 class="ps-name">${supraTaxon.name}</h3>`;
+    }else{
+      el.pickSupraclade.innerHTML = "";
+    }
+  }
+
   async function openPickGrid(rank){
     const myId = ++pickBusyId;
     el.pickEyebrow.textContent = "Multiple choice";
@@ -2086,6 +2128,7 @@
       renderPickStatus("Couldn't find enough taxonomic data for this rank.");
       return;
     }
+    setSupracladeLabel(rank);
 
     let pool;
     try{
