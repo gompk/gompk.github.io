@@ -1801,18 +1801,15 @@
   }
 
   async function fetchPickPool(rank, correctId){
-    let ancestorRank = immediateParentRank(rank);
-    let pool = [];
-    while(ancestorRank){
-      const anchorNode = state.chain.find(n => n.rank === ancestorRank);
-      if(anchorNode){
-        const children = await fetchRankChildren(anchorNode.id, rank);
-        pool = dedupeById(pool.concat(children));
-        if(pool.filter(t => t.id !== correctId).length >= 8) break;
-      }
-      ancestorRank = immediateParentRank(ancestorRank);
-    }
-    return pool;
+    // Only look within the immediate parent taxon (e.g. genus options come only
+    // from the correct family). Climbing further up the tree pulls in siblings
+    // from unrelated families/orders, which is misleading.
+    const parentRank = immediateParentRank(rank);
+    if(!parentRank) return [];
+    const anchorNode = state.chain.find(n => n.rank === parentRank);
+    if(!anchorNode) return [];
+    const children = await fetchRankChildren(anchorNode.id, rank);
+    return dedupeById(children);
   }
 
   function shuffle(arr){
@@ -1906,7 +1903,10 @@
     const options = shuffle([correctFull, ...wrongPool]);
 
     if(options.length < 2){
-      renderPickStatus("Not enough related taxa on record to build a multiple-choice grid for this rank.");
+      // No genuine choice exists at this rank within its correct parent
+      // (e.g. a family with only one genus) — auto-resolve it and move on,
+      // rather than reaching outside the correct lineage for filler options.
+      autoResolveRank(rank, correctFull);
       return;
     }
 
@@ -1928,6 +1928,28 @@
     });
     el.pickBody.innerHTML = "";
     el.pickBody.appendChild(grid);
+  }
+
+  function autoResolveRank(rank, correctFull){
+    if(!state || state.finished) return;
+    const idx = state.chain.findIndex(n => n.rank === rank);
+    const prevRevealIdx = state.revealIdx;
+    if(idx > state.bestIdx){
+      state.bestIdx = idx;
+      state.revealIdx = idx;
+    }
+    addFeedItem(correctFull.preferred_common_name || correctFull.name, correctFull, idx);
+    updateLadderReveal(prevRevealIdx);
+
+    const isSpeciesMatch = idx === state.chain.length - 1;
+    if(isSpeciesMatch){
+      closePickOverlay();
+      finishRound(true);
+    }else{
+      const nextRank = nextUnresolvedPickRank();
+      if(nextRank) openPickGrid(nextRank);
+      else { closePickOverlay(); finishRound(true); }
+    }
   }
 
   function handlePickChoice(rank, taxon, correctId, btnEl){
