@@ -1280,11 +1280,11 @@
   // Each mode maps to one or more iNaturalist order-level taxon IDs
   // (comma-separated where a birder's grouping spans several taxonomic orders).
   const GAMEMODES = [
-    { id: "all", label: "🐦 All birds", q: "3" }, // Aves
-    { id: "seabirds", label: "🌊 Seabirds & shorebirds", q: "67561,67565,71268" }, // Charadriiformes, Procellariiformes, Suliformes
-    { id: "waterbirds", label: "🦆 Waterbirds", q: "6888,67566,67562,67563" }, // Anseriformes, Pelecaniformes, Gaviiformes, Podicipediformes
-    { id: "raptors", label: "🦅 Raptors", q: "71261,67570,19350" }, // Accipitriformes, Falconiformes, Strigiformes
-    { id: "songbirds", label: "🎵 Songbirds", q: "7251" }, // Passeriformes
+    { id: "all", label: "All birds", q: "3" }, // Aves
+    { id: "seabirds", label: "Seabirds & shorebirds", q: "67561,67565,71268" }, // Charadriiformes, Procellariiformes, Suliformes
+    { id: "waterbirds", label: "Waterbirds", q: "6888,67566,67562,67563" }, // Anseriformes, Pelecaniformes, Gaviiformes, Podicipediformes
+    { id: "raptors", label: "Raptors", q: "71261,67570,19350" }, // Accipitriformes, Falconiformes, Strigiformes
+    { id: "songbirds", label: "Songbirds", q: "7251" }, // Passeriformes
   ];
   const urlTaxonId = params.get("taxon_id");
   let gamemode = urlTaxonId ? null : (GAMEMODES.find(m => m.id === params.get("mode")) || GAMEMODES[0]);
@@ -2684,7 +2684,7 @@
     if(!gamemode){
       const opt = document.createElement("option");
       opt.value = "__url__";
-      opt.textContent = "📍 From link";
+      opt.textContent = "{ From link }";
       opt.selected = true;
       el.gamemodeSelect.insertBefore(opt, el.gamemodeSelect.firstChild);
     }else{
@@ -2717,7 +2717,7 @@
     if(placeId){
       const opt = document.createElement("option");
       opt.value = "__url__";
-      opt.textContent = "📍 From link";
+      opt.textContent = "{ From link }";
       opt.selected = true;
       el.regionSelect.insertBefore(opt, el.regionSelect.firstChild.nextSibling);
     }
