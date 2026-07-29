@@ -181,6 +181,32 @@
     border-color: var(--gold);
   }
   .pick-corner:disabled{ opacity: 0.4; cursor: not-allowed; }
+  .sound-corner{
+    position: absolute;
+    top: 14px;
+    right: 62px;
+    z-index: 6;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.88);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--gold);
+    backdrop-filter: blur(3px);
+  }
+  .sound-corner svg{ width: 17px; height: 17px; display: block; }
+  .sound-corner:hover:not(:disabled){
+    background: #ffffff;
+    border-color: var(--gold);
+  }
+  .sound-corner:disabled{ opacity: 0.4; cursor: not-allowed; }
+  .sound-corner.is-playing{ color: #ffffff; background: var(--gold); border-color: var(--gold); }
+  .sound-corner.is-loading svg{ animation: spin 1s linear infinite; }
+  @keyframes spin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
   .photo-card.revealed .photo-frame{
     flex: 1;
   }
@@ -1125,6 +1151,13 @@
   <main class="grid">
     <div class="left-col">
       <div class="card photo-card">
+        <button class="sound-corner" id="soundBtn" disabled title="Play call/song" aria-label="Play call or song">
+          <svg id="soundBtnIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M4 9v6h4l5 5V4L8 9H4z"></path>
+            <path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+            <path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+          </svg>
+        </button>
         <button class="pick-corner" id="pickBtn" disabled title="Pick me — multiple choice" aria-label="Pick me — multiple choice">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <rect x="2" y="2" width="5.5" height="5.5" rx="1"></rect>
@@ -1243,6 +1276,8 @@
   let hoverToken = 0;
   const taxonPhotoCache = {};
   const taxonPhotoResolved = {};
+  let soundToken = 0;
+  let currentAudio = null;
 
   const el = {
     photoCard: document.querySelector(".photo-card"),
@@ -1253,6 +1288,8 @@
     guessInput: document.getElementById("guessInput"),
     guessBtn: document.getElementById("guessBtn"),
     pickBtn: document.getElementById("pickBtn"),
+    soundBtn: document.getElementById("soundBtn"),
+    soundBtnIcon: document.getElementById("soundBtnIcon"),
     advanceBtn: document.getElementById("advanceBtn"),
     pickOverlay: document.getElementById("pickOverlay"),
     pickPhotoImg: document.getElementById("pickPhotoImg"),
@@ -1290,11 +1327,12 @@
   function rnd(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
   function pick(arr){ return arr[rnd(0, arr.length - 1)]; }
 
-  async function fetchJSON(url){
+  async function fetchJSON(url, opts){
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 12000);
     try{
-      const res = await fetch(url, { signal: controller.signal });
+      const fetchOpts = Object.assign({ signal: controller.signal }, opts || {});
+      const res = await fetch(url, fetchOpts);
       if(!res.ok) throw new Error("Request failed (" + res.status + ")");
       return await res.json();
     }finally{
@@ -1416,6 +1454,214 @@
     return data.results[0];
   }
 
+  // ---------- calls/songs ----------
+  // Sources, tried in order, best quality first:
+  //
+  // 1. Xeno-canto, quality-filtered to grade A only (their top community
+  //    rating band). Requires a per-account key (as of Oct 2025), which is
+  //    what makes this filterable at all — GBIF/ML have no rating field to
+  //    query on.
+  // 2. Macaulay Library, via GBIF — ML publishes its own curated archive to
+  //    GBIF as its own dataset (doi.org/10.15468/ckcdpy), separate from the
+  //    Xeno-canto and iNaturalist datasets GBIF also aggregates. Filtering
+  //    to just that datasetKey gets us ML's own recordings — the same
+  //    archive https://search.macaulaylibrary.org browses — without
+  //    Xeno-canto's noisier crowd-sourced clips or iNaturalist's casual
+  //    phone recordings diluting the pool. There's no key-free public API
+  //    for search.macaulaylibrary.org itself (it's a logged-in, browser-only
+  //    search UI with CSV export), so this is the closest open equivalent.
+  //    Used only if XC has no grade-A recording for the species.
+  // 3. GBIF, unfiltered — same endpoint, any publisher (Xeno-canto,
+  //    iNaturalist, etc). Used only if the above two have nothing.
+  // 4. iNaturalist's own observations with attached audio. Thinnest pool,
+  //    last resort.
+  //
+  // NOTE ON THE KEY BELOW: it's hardcoded here at the person's request, but
+  // that means it's visible to anyone who views this page's source. If this
+  // file is ever shared or hosted publicly, swap it for a prompt/localStorage
+  // value instead so the key isn't handed out with the file.
+  const XC_API_KEY = "38aa2dc67b19a3aad1a27589f0031799f9ab6b7f";
+  const ML_GBIF_DATASET_KEY = "7f6dd0f7-9ed4-49c0-bb71-b2a9c7fed9f1"; // Macaulay Library Audio and Video Collection
+
+  function xcAbsUrl(u){
+    if(!u) return null;
+    return u.startsWith("//") ? `https:${u}` : u;
+  }
+
+  async function fetchBirdSoundXC(scientificName){
+    const qs = new URLSearchParams({
+      query: `sp:"${scientificName}" q:A`,
+      key: XC_API_KEY,
+      per_page: "50",
+    });
+    const data = await fetchJSON(`https://xeno-canto.org/api/3/recordings?${qs.toString()}`, { priority: "low" });
+    const candidates = (data.recordings || [])
+      .filter(r => r.file)
+      .map(r => ({
+        url: xcAbsUrl(r.file),
+        recordist: r.rec || "unknown recordist",
+        uri: xcAbsUrl(r.url),
+        publisher: "Xeno-canto (quality A)",
+      }));
+    for(let i = candidates.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+    return candidates.slice(0, 8);
+  }
+
+  async function fetchBirdSoundGBIF(scientificName, datasetKey){
+    const qs = new URLSearchParams({
+      scientificName,
+      mediaType: "Sound",
+      limit: "50",
+    });
+    if(datasetKey) qs.set("datasetKey", datasetKey);
+    const data = await fetchJSON(`https://api.gbif.org/v1/occurrence/search?${qs.toString()}`, { priority: "low" });
+    const candidates = [];
+    for(const occ of (data.results || [])){
+      for(const m of (occ.media || [])){
+        if(m.type === "Sound" && m.identifier){
+          candidates.push({
+            url: m.identifier,
+            recordist: occ.recordedBy || m.rightsHolder || "unknown recordist",
+            uri: m.references || occ.occurrenceID || null,
+            publisher: occ.publisher || occ.institutionCode || (datasetKey === ML_GBIF_DATASET_KEY ? "Macaulay Library" : null),
+          });
+        }
+      }
+    }
+    // Shuffle a bit so repeated rounds for the same species don't always
+    // surface the same clip, then cap the candidate list — playback will
+    // try these in order and fall through if one fails to load.
+    for(let i = candidates.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+    return candidates.slice(0, 8);
+  }
+
+  // Last-resort fallback: iNaturalist's own observations, filtered to ones
+  // that carry audio. Public, documented, no key required — but iNat's own
+  // audio coverage is much thinner than GBIF's aggregated pool, so this only
+  // gets used when GBIF (Macaulay-only and unfiltered) both turn up nothing.
+  async function fetchBirdSoundINat(taxonId){
+    async function query(qualityGrade){
+      const qs = new URLSearchParams({
+        taxon_id: taxonId,
+        sounds: "true",
+        per_page: "10",
+        order_by: "votes",
+        order: "desc",
+      });
+      if(qualityGrade) qs.set("quality_grade", qualityGrade);
+      const data = await fetchJSON(`${API}/observations?${qs.toString()}`, { priority: "low" });
+      return (data.results || []).filter(o => o.sounds && o.sounds.length);
+    }
+    let results = await query("research");
+    if(!results.length) results = await query(null);
+    return results.slice(0, 5).map(pick => ({
+      url: pick.sounds[0].file_url,
+      recordist: (pick.user && (pick.user.name || pick.user.login)) || "unknown recordist",
+      uri: pick.uri || `https://www.inaturalist.org/observations/${pick.id}`,
+      publisher: "iNaturalist",
+    })).filter(c => c.url);
+  }
+
+  async function fetchBirdSound(taxonId, scientificName){
+    try{
+      const xcCandidates = await fetchBirdSoundXC(scientificName);
+      if(xcCandidates.length) return xcCandidates;
+    }catch(e){
+      console.error("Xeno-canto sound lookup failed", e);
+    }
+    try{
+      const mlCandidates = await fetchBirdSoundGBIF(scientificName, ML_GBIF_DATASET_KEY);
+      if(mlCandidates.length) return mlCandidates;
+    }catch(e){
+      console.error("Macaulay Library (GBIF) sound lookup failed", e);
+    }
+    try{
+      const gbifCandidates = await fetchBirdSoundGBIF(scientificName);
+      if(gbifCandidates.length) return gbifCandidates;
+    }catch(e){
+      console.error("GBIF sound lookup failed", e);
+    }
+    try{
+      return await fetchBirdSoundINat(taxonId);
+    }catch(e){
+      console.error("iNat sound lookup failed", e);
+      return [];
+    }
+  }
+
+  function stopBirdSound(){
+    if(currentAudio){
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+    el.soundBtn.classList.remove("is-playing");
+  }
+
+  function setSoundButtonState(mode){
+    // mode: "loading" | "ready" | "playing" | "none"
+    el.soundBtn.classList.toggle("is-loading", mode === "loading");
+    el.soundBtn.classList.toggle("is-playing", mode === "playing");
+    el.soundBtn.disabled = mode === "loading" || mode === "none";
+    if(mode === "none") el.soundBtn.title = "No recordings with audio found";
+    else if(mode === "loading") el.soundBtn.title = "Loading call/song…";
+    else if(mode === "playing") el.soundBtn.title = "Pause";
+    else el.soundBtn.title = "Play call/song";
+  }
+
+  async function loadSoundForRound(taxonId, scientificName){
+    const myToken = ++soundToken;
+    state.sound = null;
+    setSoundButtonState("loading");
+    try{
+      const candidates = await fetchBirdSound(taxonId, scientificName);
+      if(myToken !== soundToken) return; // superseded by a newer round
+      state.sound = candidates.length ? { candidates, index: 0 } : null;
+      setSoundButtonState(state.sound ? "ready" : "none");
+      if(state.finished) refreshRevealSoundLine();
+    }catch(e){
+      if(myToken !== soundToken) return;
+      console.error(e);
+      setSoundButtonState("none");
+    }
+  }
+
+  function playCurrentSoundCandidate(){
+    const sound = state.sound;
+    const candidate = sound.candidates[sound.index];
+    currentAudio = new Audio(candidate.url);
+    currentAudio.addEventListener("ended", () => setSoundButtonState("ready"));
+    currentAudio.addEventListener("error", () => {
+      // This clip failed to load (some aggregated records point at a
+      // non-audio landing page rather than a raw file) — try the next
+      // candidate before giving up entirely.
+      sound.index += 1;
+      if(sound.index < sound.candidates.length){
+        if(state.finished) refreshRevealSoundLine();
+        playCurrentSoundCandidate();
+      }else{
+        setSoundButtonState("none");
+        if(state.finished) refreshRevealSoundLine();
+      }
+    });
+    currentAudio.play().then(() => setSoundButtonState("playing")).catch(() => setSoundButtonState("none"));
+  }
+
+  function toggleBirdSound(){
+    if(!state || !state.sound) return;
+    if(currentAudio && !currentAudio.paused){
+      stopBirdSound();
+      setSoundButtonState("ready");
+      return;
+    }
+    playCurrentSoundCandidate();
+  }
+
   function buildChain(taxonDetail){
     const all = (taxonDetail.ancestors || []).concat(taxonDetail).map(a => ({
       id: a.id, name: a.name, rank: a.rank, common: a.preferred_common_name || null
@@ -1470,7 +1716,12 @@
         finished: false,
       };
 
-      renderPhoto(obs);
+      renderPhoto(obs).then(() => {
+        // The photo's had first claim on the network; only now do we start
+        // the (low-priority) sound lookups, so a slow connection spends its
+        // bandwidth on the image first and the audio candidates second.
+        if(myToken === roundToken) loadSoundForRound(detail.id, detail.name);
+      });
       renderLadder();
       el.feed.innerHTML = "";
       el.bestLine.textContent = "Guess to narrow down the branches.";
@@ -1503,6 +1754,8 @@
     el.guessBtn.disabled = true;
     el.pickBtn.disabled = true;
     el.advanceBtn.disabled = true;
+    stopBirdSound();
+    setSoundButtonState("loading");
     // Note: this runs before `state` is replaced with the new round's state
     // object, so we can't rely on updateAdvanceButton() reading state.finished
     // here — it would still see the just-finished previous round. Force it.
@@ -1531,22 +1784,29 @@
     el.photoFrame.innerHTML = '<div class="skeleton" id="skeleton"></div>';
     mysteryFrameHTML = "";
     hoverToken++;
-    const img = new Image();
-    img.alt = "Mystery bird observation";
-    img.onload = () => {
-      el.photoFrame.innerHTML = "";
-      el.photoFrame.appendChild(img);
-      mysteryFrameHTML = el.photoFrame.innerHTML;
-    };
-    img.onerror = () => {
-      loadNewRound();
-    };
-    img.src = url;
+    return new Promise(resolve => {
+      const img = new Image();
+      img.alt = "Mystery bird observation";
+      // Give the browser an explicit hint that this image should win any
+      // contention over the sound-lookup requests below.
+      img.fetchPriority = "high";
+      img.onload = () => {
+        el.photoFrame.innerHTML = "";
+        el.photoFrame.appendChild(img);
+        mysteryFrameHTML = el.photoFrame.innerHTML;
+        resolve();
+      };
+      img.onerror = () => {
+        loadNewRound();
+        resolve(); // don't leave the sound lookup waiting forever on a dead photo
+      };
+      img.src = url;
 
-    const login = (obs.user && (obs.user.name || obs.user.login)) || "unknown observer";
-    const license = (obs.photos[0] && obs.photos[0].license_code) ? obs.photos[0].license_code.toUpperCase() : "© all rights reserved";
-    el.creditText.textContent = `Observed by ${login} · ${license}`;
-    el.creditLink.href = obs.uri || `https://www.inaturalist.org/observations/${obs.id}`;
+      const login = (obs.user && (obs.user.name || obs.user.login)) || "unknown observer";
+      const license = (obs.photos[0] && obs.photos[0].license_code) ? obs.photos[0].license_code.toUpperCase() : "© all rights reserved";
+      el.creditText.textContent = `Observed by ${login} · ${license}`;
+      el.creditLink.href = obs.uri || `https://www.inaturalist.org/observations/${obs.id}`;
+    });
   }
 
   const LADDER_HIDDEN_RANKS = new Set(["kingdom", "phylum", "class"]);
@@ -1844,6 +2104,19 @@
     return { text:"Barely related.", cls:"s-lo" };
   }
 
+  // A fragment match only counts as a coherent "echo" — rather than the
+  // guess just being the answer with a letter or two lopped off — if it
+  // still leaves a meaningful chunk of the target word unknown. Missing
+  // only the first/last letter (e.g. "oisy" vs "noisy") reveals nearly
+  // the whole word and should not be treated as a hint.
+  function isCoherentFuzzyMatch(word, fragment){
+    if(word.length <= fragment.length) return false;
+    const diff = word.length - fragment.length;
+    if(diff < 3) return false;
+    if(fragment.length / word.length > 0.6) return false;
+    return word.endsWith(fragment) || word.startsWith(fragment);
+  }
+
   function findNameEcho(query, chain){
     const qTokens = tokenize(query).map(normalizeToken);
     if(qTokens.length !== 1) return null;
@@ -1856,7 +2129,7 @@
       for(const w of words){
         const nw = normalizeToken(w);
         if(nw === q) continue;
-        if(nw.length > q.length && (nw.endsWith(q) || nw.startsWith(q))){
+        if(isCoherentFuzzyMatch(nw, q)){
           return { node: chain[i], word: w };
         }
       }
@@ -1915,8 +2188,8 @@
         const tier = rankTierName(echo.node.rank);
         const tierCls = tier ? ` tier-${tier}` : "";
         fb = {
-          text: `<div class="echo-line"><span class="echo-badge${tierCls}">🔎 Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark${tierCls}">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank} (${echo.node.common}).</div>`,
-          cls: "s-echo" + tierCls
+          text: `<div class="echo-line"><span class="echo-badge${tierCls}">🔎 Name match</span>Not a taxonomic match — but it shares <mark class="echo-mark${tierCls}">${echo.word}</mark> with its ${RANK_LABELS[echo.node.rank] || echo.node.rank}.</div>`,
+          cls: "s-none"
         };
       }
     } else if(!isExactSpecies){
@@ -1987,21 +2260,67 @@
     return cut.slice(0, cut.lastIndexOf(" ")) + "…";
   }
 
+  function isUsableSimilarSpecies(t){
+    return !!t && t.rank === "species" && !t.extinct && t.is_active !== false;
+  }
+
   async function fetchSimilarSpecies(detail){
     const genusNode = detail.rank === "genus" ? detail : (detail.ancestors || []).find(a => a.rank === "genus");
     if(!genusNode) return [];
     try{
       const data = await fetchJSON(`${API}/taxa/${genusNode.id}`);
       const genusDetail = data.results && data.results[0];
-      if(!genusDetail || !genusDetail.children) return [];
-      return genusDetail.children
-        .filter(c => c.id !== detail.id && c.rank === "species")
+      const genusMates = (genusDetail && genusDetail.children || [])
+        .filter(c => c.id !== detail.id && isUsableSimilarSpecies(c))
+        .sort((a, b) => (b.observations_count || 0) - (a.observations_count || 0));
+
+      if(genusMates.length) return genusMates.slice(0, 3);
+
+      // Monotypic (or all-extinct) genus, e.g. Trumpet Manucode is the only
+      // living Phonygammus — widen the search to sibling genera in the same
+      // family and pull each one's most-recorded species as a stand-in for
+      // "commonly confused with."
+      const familyNode = detail.rank === "family" ? detail : (detail.ancestors || []).find(a => a.rank === "family");
+      if(!familyNode) return [];
+      const familyData = await fetchJSON(`${API}/taxa/${familyNode.id}`);
+      const familyDetail = familyData.results && familyData.results[0];
+      const genusSiblings = (familyDetail && familyDetail.children || [])
+        .filter(g => g.id !== genusNode.id && g.rank === "genus" && !g.extinct && g.is_active !== false)
         .sort((a, b) => (b.observations_count || 0) - (a.observations_count || 0))
-        .slice(0, 3);
+        .slice(0, 6);
+
+      const picks = [];
+      for(const g of genusSiblings){
+        if(picks.length >= 3) break;
+        try{
+          const gData = await fetchJSON(`${API}/taxa/${g.id}`);
+          const gDetail = gData.results && gData.results[0];
+          const best = (gDetail && gDetail.children || [])
+            .filter(isUsableSimilarSpecies)
+            .sort((a, b) => (b.observations_count || 0) - (a.observations_count || 0))[0];
+          if(best) picks.push(best);
+        }catch(e){ /* skip this genus, try the next */ }
+      }
+      return picks;
     }catch(e){
       console.error(e);
       return [];
     }
+  }
+
+  function soundLineHTML(){
+    const soundCandidate = state && state.sound && state.sound.candidates[state.sound.index];
+    if(!soundCandidate || !soundCandidate.uri) return "";
+    const label = soundCandidate.publisher ? `${soundCandidate.publisher} recording` : "Audio recording";
+    return `${label}: <a href="${soundCandidate.uri}" target="_blank" rel="noopener">View source ↗</a>`;
+  }
+
+  function refreshRevealSoundLine(){
+    const lineEl = document.getElementById("revealSoundLine");
+    if(!lineEl) return;
+    const html = soundLineHTML();
+    lineEl.innerHTML = html;
+    lineEl.style.display = html ? "" : "none";
   }
 
   function renderRevealDetails(state, solved){
@@ -2020,15 +2339,18 @@
         </div>`
       : "";
 
+    const soundHTML = soundLineHTML();
+
     el.revealBox.innerHTML = `
       <div class="reveal-score">${solved
         ? `Solved in ${state.guesses} guess${state.guesses === 1 ? "" : "es"}.`
         : `Answer revealed.`
       } <a href="${state.obs.uri}" target="_blank" rel="noopener">View this observation ↗</a></div>
+      <div class="reveal-score" id="revealSoundLine" style="${soundHTML ? "" : "display:none;"}">${soundHTML}</div>
       ${headline}
       ${about}
       <div class="reveal-section" id="similarSection">
-        <h3>Often confused with</h3>
+        <h3>Similar species</h3>
         <div class="reveal-note">Looking up other species in the same genus…</div>
       </div>
     `;
@@ -2037,7 +2359,7 @@
       const section = document.getElementById("similarSection");
       if(!section) return;
       if(!similar.length){
-        section.innerHTML = `<h3>Often confused with</h3><div class="reveal-note">No close relatives on record for this genus.</div>`;
+        section.innerHTML = `<h3>Similar species</h3><div class="reveal-note">No other species on record in this genus or family.</div>`;
         return;
       }
       const cards = similar.map(s => {
@@ -2049,7 +2371,7 @@
           <div class="sc-label">${s.preferred_common_name || s.name}<i>${s.name}</i></div>
         </a>`;
       }).join("");
-      section.innerHTML = `<h3>Often confused with</h3><div class="similar-grid">${cards}</div>`;
+      section.innerHTML = `<h3>Similar species</h3><div class="similar-grid">${cards}</div>`;
     });
   }
 
@@ -2377,6 +2699,7 @@
     else{ finishRound(false); }
   });
   el.pickBtn.addEventListener("click", startPickMe);
+  el.soundBtn.addEventListener("click", toggleBirdSound);
   el.pickCloseBtn.addEventListener("click", closePickOverlay);
   el.pickRevealBtn.addEventListener("click", () => { closePickOverlay(); finishRound(false); });
   el.regionSelect.addEventListener("change", onRegionChange);
