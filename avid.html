@@ -2311,7 +2311,7 @@
   function soundLineHTML(){
     const soundCandidate = state && state.sound && state.sound.candidates[state.sound.index];
     if(!soundCandidate || !soundCandidate.uri) return "";
-    const label = soundCandidate.publisher ? `${soundCandidate.publisher} recording` : "Audio recording";
+    const label = soundCandidate.publisher ? `Audio recording (${soundCandidate.publisher})` : "Audio recording";
     return `${label}: <a href="${soundCandidate.uri}" target="_blank" rel="noopener">View source ↗</a>`;
   }
 
