@@ -1871,7 +1871,7 @@
         <div class="rung-body">
           <span class="rk-label">${RANK_LABELS[node.rank] || node.rank}</span>
           <div class="rung-top">
-            <span class="rk-name">••••••••</span>
+            <span class="rk-name">- - - - - -</span>
             <span class="rk-flag">revealed</span>
           </div>
           <span class="rk-common"></span>
@@ -2684,7 +2684,7 @@
     if(!gamemode){
       const opt = document.createElement("option");
       opt.value = "__url__";
-      opt.textContent = "{ From link }";
+      opt.textContent = "{ from link }";
       opt.selected = true;
       el.gamemodeSelect.insertBefore(opt, el.gamemodeSelect.firstChild);
     }else{
@@ -2717,7 +2717,7 @@
     if(placeId){
       const opt = document.createElement("option");
       opt.value = "__url__";
-      opt.textContent = "{ From link }";
+      opt.textContent = "{ from link }";
       opt.selected = true;
       el.regionSelect.insertBefore(opt, el.regionSelect.firstChild.nextSibling);
     }
