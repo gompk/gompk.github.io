@@ -43,18 +43,24 @@
     --color-danger-bg: rgba(179,18,63,0.08); /* error banner background */
     --color-low-confidence: #c23a72;   /* low-confidence guess feed marker */
 
-    /* --- taxonomic tier colors (constant across themes: these carry meaning) --- */
+    /* --- taxonomic tier colors ---
+       Base/bg/ring stay constant across themes (they carry meaning:
+       the same hue always means the same rank). The "-dim" variants
+       are the readable text color for that tier's tinted background,
+       and DO need to flip per theme (dark text on a light tint,
+       light text on a dark tint) — see the dark themes below. */
     --color-tier-order: #a06fd6;           /* order-level match */
-    --color-tier-order-dim: #5a3684;
+    --color-tier-order-dim: #5a3684;       /* text on order tint (theme-aware) */
     --color-tier-order-bg: rgba(160,111,214,0.20);
     --color-tier-family: #3454d1;          /* family-level match */
-    --color-tier-family-dim: #1e2350;
+    --color-tier-family-dim: #1e2350;      /* text on family tint (theme-aware) */
     --color-tier-family-bg: rgba(52,84,209,0.18);
     --color-tier-genus: #2f9e44;           /* genus-level match */
-    --color-tier-genus-dim: #1a5c27;
+    --color-tier-genus-dim: #1a5c27;       /* text on genus tint (theme-aware) */
     --color-tier-genus-bg: rgba(47,158,68,0.20);
     --color-tier-species: #f0c419;         /* species-level (exact) match */
-    --color-tier-species-dim: #050401;
+    --color-tier-species-dim: #050401;     /* text on species tint (theme-aware) */
+    --color-tier-species-ink: #050401;     /* text on solid species badge — always dark, constant */
     --color-tier-species-bg: rgba(240,196,25,0.22);
     --color-tier-order-ring: rgba(160,111,214,0.5);   /* echo-mark outline rings */
     --color-tier-family-ring: rgba(52,84,209,0.5);
@@ -107,6 +113,10 @@
     --color-danger-dim: #ffb4c4;
     --color-danger-bg: rgba(255,107,138,0.14);
     --color-low-confidence: #e07fa8;
+    --color-tier-order-dim: #d9c3f0;
+    --color-tier-family-dim: #c3d0f7;
+    --color-tier-genus-dim: #b9e8c4;
+    --color-tier-species-dim: #f5e3a3;
     --color-scrim-transparent: rgba(0,0,0,0);
     --color-scrim: rgba(0,0,0,0.72);
     --color-scrim-strong: rgba(0,0,0,0.85);
@@ -293,6 +303,10 @@
     --color-danger-dim: #ffb3b3;
     --color-danger-bg: rgba(255,92,92,0.14);
     --color-low-confidence: #d68a8a;
+    --color-tier-order-dim: #cbb0ea;
+    --color-tier-family-dim: #b7c4f5;
+    --color-tier-genus-dim: #a8e0b6;
+    --color-tier-species-dim: #f2e29c;
     --color-scrim-transparent: rgba(0,0,0,0);
     --color-scrim: rgba(0,0,0,0.72);
     --color-scrim-strong: rgba(0,0,0,0.88);
@@ -706,7 +720,7 @@
   .echo-badge.tier-order, .echo-mark.tier-order{ background: var(--color-tier-order); color: var(--color-text-inverse); }
   .echo-badge.tier-family, .echo-mark.tier-family{ background: var(--color-tier-family); color: var(--color-text-inverse); }
   .echo-badge.tier-genus, .echo-mark.tier-genus{ background: var(--color-tier-genus); color: var(--color-text-inverse); }
-  .echo-badge.tier-species, .echo-mark.tier-species{ background: var(--color-tier-species); color: var(--color-tier-species-dim); }
+  .echo-badge.tier-species, .echo-mark.tier-species{ background: var(--color-tier-species); color: var(--color-tier-species-ink); }
   .echo-mark.tier-order{ box-shadow: 0 0 0 1px var(--color-tier-order-ring); }
   .echo-mark.tier-family{ box-shadow: 0 0 0 1px var(--color-tier-family-ring); }
   .echo-mark.tier-genus{ box-shadow: 0 0 0 1px var(--color-tier-genus-ring); }
@@ -1425,10 +1439,6 @@
     top: 14px;
     right: 14px;
     z-index: 6;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
   }
   .theme-toggle{
     width: 40px;
@@ -1449,6 +1459,9 @@
   .theme-toggle:active{ transform: translateY(1px); }
   .theme-switcher.open .theme-toggle{ border-color: var(--color-accent); }
   .theme-menu{
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
