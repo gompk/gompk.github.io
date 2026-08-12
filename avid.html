@@ -199,14 +199,21 @@
     backdrop-filter: blur(3px);
   }
   .sound-corner svg{ width: 17px; height: 17px; display: block; }
-  .sound-corner:hover:not(:disabled){
+  .sound-corner:hover:not(:disabled):not(.is-playing){
     background: #ffffff;
     border-color: var(--gold);
+  }
+  .sound-corner.is-playing:hover:not(:disabled){
+    filter: brightness(0.92);
   }
   .sound-corner:disabled{ opacity: 0.4; cursor: not-allowed; }
   .sound-corner.is-playing{ color: #ffffff; background: var(--gold); border-color: var(--gold); }
   .sound-corner.is-loading svg{ animation: spin 1s linear infinite; }
+  .sound-corner .sound-icon-mute{ display: none; }
+  .sound-corner.is-muted .sound-icon-waves{ display: none; }
+  .sound-corner.is-muted .sound-icon-mute{ display: inline; }
   @keyframes spin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+
   .photo-card.revealed .photo-frame{
     flex: 1;
   }
@@ -1186,8 +1193,14 @@
         <button class="sound-corner" id="soundBtn" disabled title="Play call/song" aria-label="Play call or song">
           <svg id="soundBtnIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 9v6h4l5 5V4L8 9H4z"></path>
-            <path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
-            <path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+            <g class="sound-icon-waves">
+              <path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+              <path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+            </g>
+            <g class="sound-icon-mute">
+              <path d="M15.5 9.5l6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+              <path d="M21.5 9.5l-6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+            </g>
           </svg>
         </button>
         <button class="pick-corner" id="pickBtn" disabled title="Pick me — multiple choice" aria-label="Pick me — multiple choice">
@@ -1278,13 +1291,33 @@
 
   // ---------- gamemodes (taxonomic clade filters) ----------
   // Each mode maps to one or more iNaturalist order-level taxon IDs
-  // (comma-separated where a birder's grouping spans several taxonomic orders).
+  // (comma-separated where a grouping spans several taxonomic orders).
+  //
+  // The "Major bird clades" group below follows the modern avian phylogeny
+  // (the Neoaves backbone recovered by e.g. Stiller et al. 2024 / Prum et al.
+  // 2015): the ~12 deep clades of Neognathae plus Palaeognathae, each labelled
+  // with a birder-friendly common name alongside its Latin clade name.
   const GAMEMODES = [
-    { id: "all", label: "All birds", q: "3" }, // Aves
-    { id: "seabirds", label: "Seabirds & shorebirds", q: "67561,67565,71268" }, // Charadriiformes, Procellariiformes, Suliformes
-    { id: "waterbirds", label: "Waterbirds", q: "6888,67566,67562,67563" }, // Anseriformes, Pelecaniformes, Gaviiformes, Podicipediformes
-    { id: "raptors", label: "Raptors", q: "71261,67570,19350" }, // Accipitriformes, Falconiformes, Strigiformes
-    { id: "songbirds", label: "Songbirds", q: "7251" }, // Passeriformes
+    // -- popular birder groupings --
+    { id: "all", label: "All birds", q: "3", group: "Popular" }, // Aves
+    { id: "seabirds", label: "Seabirds & shorebirds", q: "67561,67565,71268", group: "Popular" }, // Charadriiformes, Procellariiformes, Suliformes
+    { id: "waterbirds", label: "Waterbirds", q: "6888,67566,67562,67563", group: "Popular" }, // Anseriformes, Pelecaniformes, Gaviiformes, Podicipediformes
+    { id: "raptors", label: "Raptors", q: "71261,67570,19350", group: "Popular" }, // Accipitriformes, Falconiformes, Strigiformes
+    { id: "songbirds", label: "Songbirds", q: "7251", group: "Popular" }, // Passeriformes
+
+    // -- major clades of Neoaves + Palaeognathae, tip to root --
+    { id: "palaeognathae", label: "Ratites & Tinamous (Palaeognathae)", q: "20530,367701,367703,367702,20487", group: "Major bird clades" }, // Tinamiformes, Rheiformes, Apterygiformes, Casuariiformes, Struthioniformes
+    { id: "galloanseres", label: "Fowl & Waterfowl (Galloanseres)", q: "573,6888", group: "Major bird clades" }, // Galliformes, Anseriformes
+    { id: "mirandornithes", label: "Grebes & Flamingos (Mirandornithes)", q: "67563,67569", group: "Major bird clades" }, // Podicipediformes, Phoenicopteriformes
+    { id: "columbimorphae", label: "Pigeons, Sandgrouse & Mesites (Columbimorphae)", q: "2708,470156,71265", group: "Major bird clades" }, // Columbiformes, Pterocliformes, Mesitornithiformes
+    { id: "otidimorphae", label: "Cuckoos, Turacos & Bustards (Otidimorphae)", q: "1623,793433,71266", group: "Major bird clades" }, // Cuculiformes, Musophagiformes, Otidiformes
+    { id: "opisthocomiformes", label: "Hoatzin (Opisthocomiformes)", q: "508251", group: "Major bird clades" }, // Opisthocomiformes
+    { id: "cursorimorphae", label: "Shorebirds & Cranes (Cursorimorphae)", q: "67561,4", group: "Major bird clades" }, // Charadriiformes, Gruiformes
+    { id: "strisores", label: "Nightjars, Swifts & Hummingbirds (Strisores)", q: "67573,1583757,1583752,1583759,1583760,5561", group: "Major bird clades" }, // Caprimulgiformes, Steatornithiformes, Nyctibiiformes, Podargiformes, Aegotheliformes, Apodiformes
+    { id: "phaethontimorphae", label: "Tropicbirds, Kagu & Sunbittern (Phaethontimorphae)", q: "71263,67567", group: "Major bird clades" }, // Eurypygiformes, Phaethontiformes
+    { id: "aequornithes", label: "Penguins, Loons & Tubenoses (Aequornithes)", q: "67566,67565,67564,67562", group: "Major bird clades" }, // Pelecaniformes, Procellariiformes, Sphenisciformes, Gaviiformes
+    { id: "afroaves", label: "Owls, Hawks & Woodpeckers (Afroaves)", q: "71261,19350,17550,2114,525653,20715,525652,3686", group: "Major bird clades" }, // Accipitriformes, Strigiformes, Piciformes, Coraciiformes, Bucerotiformes, Trogoniformes, Leptosomiformes, Coliiformes
+    { id: "australaves", label: "Songbirds, Parrots & Falcons (Australaves)", q: "7251,18874,67570,71262", group: "Major bird clades" }, // Passeriformes, Psittaciformes, Falconiformes, Cariamiformes
   ];
   const urlTaxonId = params.get("taxon_id");
   let gamemode = urlTaxonId ? null : (GAMEMODES.find(m => m.id === params.get("mode")) || GAMEMODES[0]);
@@ -1320,10 +1353,13 @@
   let state = null;
   let mysteryFrameHTML = "";
   let hoverToken = 0;
+  let tierGridActive = false;
   const taxonPhotoCache = {};
   const taxonPhotoResolved = {};
   let soundToken = 0;
   let currentAudio = null;
+  let soundMuted = false; // user's mute preference, persists across rounds
+  let audioUnlocked = false; // true once the page has had a real user gesture
 
   const el = {
     photoCard: document.querySelector(".photo-card"),
@@ -1410,7 +1446,11 @@
       (attempt >= 3 || o.taxon.rank === "species")
     );
     if(results.length === 0){
-      if(attempt >= 6) throw new Error("Couldn't find any observations for this clade.");
+      if(attempt >= 6){
+        const err = new Error("Couldn't find any observations for this clade.");
+        err.noObservations = true; // lets loadNewRound tell "no matches" apart from a transient network hiccup
+        throw err;
+      }
       return fetchRandomObservationUniform(attempt + 1);
     }
     return pick(results);
@@ -1648,16 +1688,19 @@
       currentAudio.currentTime = 0;
     }
     el.soundBtn.classList.remove("is-playing");
+    el.soundBtn.classList.remove("is-muted");
   }
 
   function setSoundButtonState(mode){
-    // mode: "loading" | "ready" | "playing" | "none"
+    // mode: "loading" | "ready" | "playing" | "muted" | "none"
     el.soundBtn.classList.toggle("is-loading", mode === "loading");
     el.soundBtn.classList.toggle("is-playing", mode === "playing");
+    el.soundBtn.classList.toggle("is-muted", mode === "muted");
     el.soundBtn.disabled = mode === "loading" || mode === "none";
     if(mode === "none") el.soundBtn.title = "No recordings with audio found";
     else if(mode === "loading") el.soundBtn.title = "Loading call/song…";
-    else if(mode === "playing") el.soundBtn.title = "Pause";
+    else if(mode === "playing") el.soundBtn.title = "Mute";
+    else if(mode === "muted") el.soundBtn.title = "Unmute";
     else el.soundBtn.title = "Play call/song";
   }
 
@@ -1669,7 +1712,11 @@
       const candidates = await fetchBirdSound(taxonId, scientificName);
       if(myToken !== soundToken) return; // superseded by a newer round
       state.sound = candidates.length ? { candidates, index: 0 } : null;
-      setSoundButtonState(state.sound ? "ready" : "none");
+      if(state.sound){
+        playCurrentSoundCandidate();
+      }else{
+        setSoundButtonState("none");
+      }
       if(state.finished) refreshRevealSoundLine();
     }catch(e){
       if(myToken !== soundToken) return;
@@ -1682,7 +1729,8 @@
     const sound = state.sound;
     const candidate = sound.candidates[sound.index];
     currentAudio = new Audio(candidate.url);
-    currentAudio.addEventListener("ended", () => setSoundButtonState("ready"));
+    currentAudio.loop = true;
+    currentAudio.muted = soundMuted;
     currentAudio.addEventListener("error", () => {
       // This clip failed to load (some aggregated records point at a
       // non-audio landing page rather than a raw file) — try the next
@@ -1696,16 +1744,34 @@
         if(state.finished) refreshRevealSoundLine();
       }
     });
-    currentAudio.play().then(() => setSoundButtonState("playing")).catch(() => setSoundButtonState("none"));
+    currentAudio.play().then(() => {
+      audioUnlocked = true;
+      setSoundButtonState(soundMuted ? "muted" : "playing");
+    }).catch(() => {
+      // The browser is blocking audio until the page has had a genuine
+      // user interaction (click / tap / keypress) — this is a hard
+      // browser rule, not something JS can override. Leave the button
+      // enabled; the page-wide listener below retries as soon as that
+      // first interaction happens, and every round after that plays
+      // automatically without needing another click.
+      setSoundButtonState("ready");
+    });
   }
 
   function toggleBirdSound(){
     if(!state || !state.sound) return;
+    audioUnlocked = true;
     if(currentAudio && !currentAudio.paused){
-      stopBirdSound();
-      setSoundButtonState("ready");
+      soundMuted = !soundMuted;
+      currentAudio.muted = soundMuted;
+      setSoundButtonState(soundMuted ? "muted" : "playing");
       return;
     }
+    // Playback never actually started (blocked until now) — this click is
+    // a real user gesture, so start it. From here on, audioUnlocked stays
+    // true, so future rounds' audio.play() calls succeed on their own
+    // without needing another click.
+    soundMuted = false;
     playCurrentSoundCandidate();
   }
 
@@ -1778,6 +1844,30 @@
     }catch(e){
       if(myToken !== roundToken) return;
       console.error(e);
+
+      if(e.noObservations){
+        const modeLabel = gamemode ? gamemode.label : "this clade";
+        if(placeId){
+          // Likely an incompatible mode/region pairing (e.g. a Madagascar-only
+          // or South American clade with a region that has no records of it)
+          // rather than a real outage — clear the region instead of retrying
+          // the same doomed query forever.
+          const regionOpt = el.regionSelect.options[el.regionSelect.selectedIndex];
+          const regionLabel = (regionOpt && regionOpt.value) ? regionOpt.textContent : "that region";
+          showError(`No observations found for "${modeLabel}" in ${regionLabel} — switching region to Everywhere.`);
+          placeId = null;
+          el.regionSelect.value = "";
+          const url = new URL(location.href);
+          url.searchParams.delete("place_id");
+          history.replaceState(null, "", url);
+          setTimeout(() => { if(myToken === roundToken) loadNewRound(); }, 900);
+        }else{
+          showError(`No observations found for "${modeLabel}" on iNaturalist.`);
+          setLoading(false);
+        }
+        return;
+      }
+
       showError("Trouble reaching iNaturalist — " + e.message + " Trying again…");
       setTimeout(() => { if(myToken === roundToken) loadNewRound(); }, 1200);
     }
@@ -1831,6 +1921,7 @@
     el.photoFrame.innerHTML = '<div class="skeleton" id="skeleton"></div>';
     mysteryFrameHTML = "";
     hoverToken++;
+    tierGridActive = false;
     return new Promise(resolve => {
       const img = new Image();
       img.alt = "Mystery bird observation";
@@ -1950,6 +2041,7 @@
 
   function renderTierGrid(node, photos){
     if(!photos.length){
+      tierGridActive = false;
       el.photoFrame.innerHTML = mysteryFrameHTML;
       return;
     }
@@ -1960,6 +2052,7 @@
       return `<img src="${src}" alt="" loading="lazy">`;
     }).join("");
     const label = RANK_LABELS[node.rank] || node.rank;
+    tierGridActive = true;
     el.photoFrame.innerHTML = `
       <div class="tier-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">${imgs}</div>
       <div class="tier-grid-label">${label} <i>${node.name}</i></div>
@@ -2002,7 +2095,10 @@
   function hideTierGrid(){
     clearTimeout(tierHoverTimer);
     hoverToken++;
-    if(mysteryFrameHTML) el.photoFrame.innerHTML = mysteryFrameHTML;
+    if(tierGridActive && mysteryFrameHTML){
+      tierGridActive = false;
+      el.photoFrame.innerHTML = mysteryFrameHTML;
+    }
   }
 
   // ---------- taxon resolution + scoring ----------
@@ -2675,11 +2771,23 @@
 
   // ---------- gamemode selector ----------
   function populateGamemodeSelect(){
+    const groups = new Map(); // group label -> <optgroup> (or null for ungrouped)
     GAMEMODES.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.id;
       opt.textContent = m.label;
-      el.gamemodeSelect.appendChild(opt);
+      if(m.group){
+        let og = groups.get(m.group);
+        if(!og){
+          og = document.createElement("optgroup");
+          og.label = m.group;
+          groups.set(m.group, og);
+          el.gamemodeSelect.appendChild(og);
+        }
+        og.appendChild(opt);
+      }else{
+        el.gamemodeSelect.appendChild(opt);
+      }
     });
     if(!gamemode){
       const opt = document.createElement("option");
