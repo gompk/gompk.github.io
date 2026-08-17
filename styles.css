@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Radio+Canada:ital,wght@0,300..700;1,300..700&display=swap');
+
+:root {
+  --color-bg-start: #325bff;
+  --color-bg-end: #010e36;
+  --color-surface: #ffffff;
+  --color-surface-translucent: rgba(255, 255, 255, 0.88);
+  --color-border: rgba(226, 232, 240, 0.8);
+  --color-accent: #2563eb;
+  --color-text: #0f172a;
+  --color-shadow: rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Radio Canada', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+  min-height: 100vh;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+}
+
+.app-header {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.home-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: opacity 0.2s ease;
+}
+
+.home-link:hover {
+  opacity: 0.8;
+}
+
+.app-header h1 {
+  color: #ffffff;
+  font-size: 2rem;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px var(--color-shadow);
+  overflow: hidden;
+}
+
+.photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #cbd5e1;
+}
+
+.photo-frame img#obsPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Control Buttons */
+.back-corner, .sound-corner {
+  position: absolute;
+  top: 14px;
+  z-index: 6;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-translucent);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-accent);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s, transform 0.1s;
+}
+
+.sound-corner { right: 14px; }
+.back-corner { right: 62px; }
+
+.back-corner:hover:not(:disabled),
+.sound-corner:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.back-corner:disabled,
+.sound-corner:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.back-corner svg, .sound-corner svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Minimap Overlay */
+.minimap-card {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 6;
+  width: 110px;
+  height: 110px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  background: var(--color-surface-translucent);
+  backdrop-filter: blur(4px);
+  display: none;
+  box-shadow: 0 4px 12px var(--color-shadow);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.minimap-card.show {
+  display: block;
+}
+
+.minimap-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Gameplay Controls */
+.controls {
+  background: var(--color-surface);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px var(--color-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.primary-btn {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
