@@ -3670,62 +3670,35 @@
     return { name: node.name, preferred_common_name: node.common, rank: node.rank };
   }
 
-  // Exact common names can be shared by multiple, unrelated taxa.  Do not let
-  // the autocomplete endpoint's ranking decide which one the player meant.
-  // Instead, if an exact common name is ambiguous, award only the lowest
-  // common ancestor of the matching taxa.
-  function exactNameKind(query, taxon){
-    const q = query.trim().toLowerCase();
-    const sci = (taxon.name || "").trim().toLowerCase();
-    const common = (taxon.preferred_common_name || "").trim().toLowerCase();
-    if(sci === q) return "scientific";
-    if(common === q) return "common";
-    return null;
-  }
-
-  function lowestCommonAncestorId(taxa){
-    if(!taxa.length) return null;
-    const first = [
-      ...(taxa[0].ancestor_ids || []),
-      taxa[0].id
-    ];
-    const commonIds = new Set(first);
-    for(const t of taxa.slice(1)){
-      const ids = new Set([...(t.ancestor_ids || []), t.id]);
-      for(const id of [...commonIds]){
-        if(!ids.has(id)) commonIds.delete(id);
+  function resolveAgainstChain(query){
+    if(!state || !state.chain || !state.chain.length) return null;
+    let bestNode = null, bestTier = Infinity, bestIdx = -1;
+    state.chain.forEach((node, i) => {
+      let tier = matchTier(query, chainNodeAsTaxon(node));
+      // The species rung shows the parent species' common name, but the
+      // actually-observed taxon can be a subspecies with a more specific
+      // common name (e.g. "Common Australian White Ibis") — a guess close
+      // to that name should still be credited for the species.
+      if(i === state.chain.length - 1 && state.detail){
+        const aliasTier = matchTier(query, state.detail);
+        if(aliasTier < tier) tier = aliasTier;
       }
-      if(!commonIds.size) return null;
-    }
-
-    // ancestor_ids are ordered from older to newer ancestors.  The last
-    // common ID is therefore the deepest shared taxon.
-    for(let i = first.length - 1; i >= 0; i--){
-      if(commonIds.has(first[i])) return first[i];
+      if(tier < bestTier || (tier === bestTier && i > bestIdx)){
+        bestTier = tier;
+        bestNode = node;
+        bestIdx = i;
+      }
+    });
+    if(bestNode && bestTier <= 1){
+      return { id: bestNode.id, name: bestNode.name, preferred_common_name: bestNode.common, rank: bestNode.rank, ancestor_ids: [] };
     }
     return null;
-  }
-
-  async function fetchTaxonById(id){
-    if(!id) return null;
-    try{
-      const data = await fetchJSON(`${API}/taxa/${id}`);
-      return data.results && data.results[0] ? data.results[0] : null;
-    }catch(e){
-      return null;
-    }
-  }
-
-  async function resolveAmbiguousCommonName(query, results){
-    const exactCommon = results.filter(t => exactNameKind(query, t) === "common");
-    if(exactCommon.length <= 1) return exactCommon[0] || null;
-
-    const lcaId = lowestCommonAncestorId(exactCommon);
-    if(!lcaId) return null;
-    return await fetchTaxonById(lcaId);
   }
 
   async function resolveGuess(query){
+    const chainMatch = resolveAgainstChain(query);
+    if(chainMatch) return chainMatch;
+
     const cladeIdSet = new Set(String(cladeId).split(",").map(Number));
     const attempts = buildQueryAttempts(query);
     let results = [];
@@ -3736,21 +3709,6 @@
       if(results.length) break;
     }
     if(!results.length) return null;
-
-    // Exact scientific names are unambiguous and should retain their full
-    // specificity. Exact common names are different: if several taxa share
-    // the name, resolve to their lowest common ancestor instead of choosing
-    // whichever result happened to rank first.
-    const exactScientific = results.filter(t => exactNameKind(query, t) === "scientific");
-    if(exactScientific.length === 1) return exactScientific[0];
-
-    const exactCommon = results.filter(t => exactNameKind(query, t) === "common");
-    if(exactCommon.length > 1){
-      const ambiguous = await resolveAmbiguousCommonName(query, results);
-      if(ambiguous) return ambiguous;
-      return null;
-    }
-    if(exactCommon.length === 1) return exactCommon[0];
 
     const chain = state ? state.chain : null;
     const ranked = results
@@ -4032,23 +3990,27 @@
   let revealMapToken = 0;
   const taxonPointsCache = {};
 
-  // Fetch real observation coordinates for the taxon and render them as one
-  // continuous client-side density surface. We sample observations in random
-  // order rather than taking the first records by iNat ID: ID order is not
-  // geographically representative and can make widespread taxa look
-  // artificially absent from large parts of their range. The sample is
-  // capped at 5,000 observations, with requests fetched in small batches.
+  // Fetches real observation coordinates for the taxon so range can be
+  // rendered as one continuous client-side density surface (Leaflet.heat)
+  // instead of iNaturalist's server-rendered heatmap tiles — those are
+  // computed independently per-tile and show hard seams at low zoom.
+  //
+  // iNaturalist caps per_page at 200, so a single request only gives a thin
+  // sample for well-recorded species. Pull up to 5 pages (1000 observations)
+  // in parallel once we know how many pages actually exist, so common
+  // species get a properly dense surface without wasting requests on rare
+  // ones that don't have that many records to begin with.
   async function fetchTaxonRangePoints(taxonId){
     if(taxonPointsCache[taxonId]) return taxonPointsCache[taxonId];
     const promise = (async () => {
       const perPage = 200;
-      const maxPages = 25;
+      const maxPages = 5;
       const pageQs = (page) => new URLSearchParams({
         taxon_id: String(taxonId),
         quality_grade: "research",
         geo: "true",
         per_page: String(perPage),
-        order_by: "random",
+        order_by: "id",
         page: String(page),
       });
       const points = [];
@@ -4064,15 +4026,11 @@
         const totalResults = firstPage.total_results || 0;
         const pagesAvailable = Math.min(maxPages, Math.ceil(totalResults / perPage));
         if(pagesAvailable > 1){
-          // Fetch in small batches rather than firing all 25 requests at once.
-          const pages = Array.from({ length: pagesAvailable - 1 }, (_, i) => i + 2);
-          for(let i = 0; i < pages.length; i += 5){
-            const batch = pages.slice(i, i + 5);
-            const rest = await Promise.all(
-              batch.map(page => fetchJSON(`${API}/observations?${pageQs(page).toString()}`).catch(() => null))
-            );
-            rest.forEach(data => { if(data) collect(data); });
-          }
+          const rest = await Promise.all(
+            Array.from({ length: pagesAvailable - 1 }, (_, i) => i + 2)
+              .map(page => fetchJSON(`${API}/observations?${pageQs(page).toString()}`).catch(() => null))
+          );
+          rest.forEach(data => { if(data) collect(data); });
         }
       }catch(e){
         console.error(e);
