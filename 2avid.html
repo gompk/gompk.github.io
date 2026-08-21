@@ -164,7 +164,6 @@
     --color-surface: #1c1e29;
     --color-surface-alt: #242739;
     --color-surface-translucent: rgba(28,30,41,0.88);
-    --border-mix: 72%;
     --color-border: #2a2c3a;
     --color-text-primary: #eceefb;
     --color-text-secondary: #b7bbe6;
@@ -201,7 +200,6 @@
     --color-surface: #1c2016;
     --color-surface-alt: #292d1f;
     --color-surface-translucent: rgba(28,32,22,0.88);
-    --border-mix: 72%;
     --color-border: #343b26;
     --color-text-primary: #f2f3ef;
     --color-text-secondary: #d6e0c2;
@@ -271,7 +269,6 @@
     --color-surface: #201a16;
     --color-surface-alt: #2d251f;
     --color-surface-translucent: rgba(32,26,22,0.88);
-    --border-mix: 72%;
     --color-border: #3b2e26;
     --color-text-primary: #f3f1ef;
     --color-text-secondary: #e0cec2;
@@ -341,7 +338,6 @@
     --color-surface: #161e20;
     --color-surface-alt: #1f2b2d;
     --color-surface-translucent: rgba(22,30,32,0.88);
-    --border-mix: 72%;
     --color-border: #26383b;
     --color-text-primary: #eff2f3;
     --color-text-secondary: #c2dbe0;
@@ -411,7 +407,6 @@
     --color-surface: #201619;
     --color-surface-alt: #2d1f24;
     --color-surface-translucent: rgba(32,22,25,0.88);
-    --border-mix: 72%;
     --color-border: #3b262d;
     --color-text-primary: #f3eff0;
     --color-text-secondary: #e0c2cd;
@@ -481,7 +476,6 @@
     --color-surface: #201a16;
     --color-surface-alt: #2d261f;
     --color-surface-translucent: rgba(32,26,22,0.88);
-    --border-mix: 72%;
     --color-border: #3b3026;
     --color-text-primary: #f3f1ef;
     --color-text-secondary: #e0d0c2;
@@ -551,7 +545,6 @@
     --color-surface: #131316;
     --color-surface-alt: #1c1c21;
     --color-surface-translucent: rgba(19,19,22,0.88);
-    --border-mix: 72%;
     --color-border: #28282c;
     --color-text-primary: #f4f4f6;
     --color-text-secondary: #c7c7d1;
@@ -621,7 +614,6 @@
     --color-surface: #16191b;
     --color-surface-alt: #1f2427;
     --color-surface-translucent: rgba(22,25,27,0.88);
-    --border-mix: 72%;
     --color-border: #2c3336;
     --color-text-primary: #f1f3f4;
     --color-text-secondary: #ccd4d7;
@@ -712,8 +704,8 @@
   @media (max-width: 860px){
     .wrap{ margin-left: 0; width: 100%; }
     .left-col{ position: static; width: auto; height: auto; }
-    .photo-stage{ height: min(48vh, 480px) !important; }
-    .photo-card.revealed .photo-stage{ height: min(52vh, 520px) !important; }
+    .photo-frame{ height: min(48vh, 480px) !important; }
+    .photo-card.revealed .photo-frame{ height: min(52vh, 520px) !important; }
     .similar-grid{ grid-template-columns: repeat(4, 1fr); }
   }
   @media (max-width: 480px){
@@ -745,7 +737,7 @@
 
   .card{
     background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
   }
 
@@ -762,32 +754,23 @@
   @media (max-width: 860px){
     .photo-card{ height: auto; border-radius: var(--radius); border-width: 1px; }
   }
-  /* .photo-stage wraps #photoFrame and .photo-top-controls as siblings.
-     The controls used to live inside #photoFrame, but that div's
-     innerHTML gets swapped wholesale for the loading skeleton, the
-     taxonomic-tier hover grid, and round-restore snapshots — same
-     issue described above for .obs-map-wrap. That silently deleted the
-     sound/pick-me/back buttons from the DOM the first time any of
-     those ran, leaving el.soundBtn etc. pointing at detached nodes. */
-  .photo-stage{
+  .photo-frame{
     position: relative;
     width: 100%;
     flex: 1;
     min-height: 0;
-    transition: height 0.35s ease;
-  }
-  .photo-frame{
-    position: absolute;
-    inset: 0;
     background: var(--color-bg-page-alt);
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: height 0.35s ease;
   }
 
   .pick-corner{
-    position: relative;
+    position: absolute;
+    top: 14px;
+    right: 62px;
     z-index: 6;
     width: 40px;
     height: 40px;
@@ -796,7 +779,7 @@
     align-items: center;
     justify-content: center;
     background: var(--color-surface-translucent);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-accent);
     backdrop-filter: blur(3px);
@@ -808,7 +791,9 @@
   }
   .pick-corner:disabled{ opacity: 0.4; cursor: not-allowed; }
   .sound-corner{
-    position: relative;
+    position: absolute;
+    top: 14px;
+    right: 110px;
     z-index: 6;
     width: 40px;
     height: 40px;
@@ -817,7 +802,7 @@
     align-items: center;
     justify-content: center;
     background: var(--color-surface-translucent);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     color: var(--color-accent);
     backdrop-filter: blur(3px);
@@ -838,7 +823,7 @@
   .sound-corner.is-muted .sound-icon-mute{ display: inline; }
   @keyframes spin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
 
-  .photo-card.revealed .photo-stage{
+  .photo-card.revealed .photo-frame{
     flex: 1;
   }
   .photo-frame img{
@@ -861,41 +846,6 @@
   }
   @keyframes shimmer{ 0%{ background-position: 150% 0 } 100%{ background-position: -50% 0 } }
 
-  .photo-top-controls{
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 6;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-  .photo-top-controls > button,
-  .photo-top-controls .theme-toggle{
-    flex: 0 0 40px;
-  }
-  .photo-back-corner{
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
-    background: var(--color-surface-translucent);
-    color: var(--color-accent);
-    backdrop-filter: blur(3px);
-  }
-  .photo-back-corner svg{ width: 17px; height: 17px; display: block; transform: translate(1.5px, -1px); }
-  .photo-back-corner:hover:not(:disabled){
-    background: var(--color-surface);
-    border-color: var(--color-accent);
-  }
-  .photo-back-corner:active{ transform: translateY(1px); }
-  .photo-back-corner[hidden]{ display:none; }
-
   .photo-credit{
     display:flex;
     justify-content: space-between;
@@ -903,43 +853,12 @@
     font-family: var(--font-mono);
     font-size: 10.5px;
     color: var(--color-text-muted);
-    padding: 8px 14px 9px;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    padding: 9px 14px;
+    border-top: 1px solid var(--color-border);
     flex-wrap: wrap;
   }
   .photo-credit a{ color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 2px; }
   .photo-credit a:hover{ color: var(--color-accent); }
-  .photo-credit .credit-author{ text-decoration: none; }
-  .photo-credit .credit-author:hover{ text-decoration: underline; }
-
-  /* Observation timezone is redacted during the mystery round.
-     The real text keeps its normal typography/layout; only its glyphs are
-     concealed. Clicking it, solving, or revealing the species restores it. */
-  .photo-credit .observation-timezone{
-    display: inline-block;
-    cursor: pointer;
-    font: inherit;
-    line-height: inherit;
-    letter-spacing: inherit;
-    text-decoration: inherit;
-    color: transparent;
-    background: var(--color-text-muted);
-    border: 0;
-    padding: 0 1px;
-    margin: 0;
-    border-radius: 1px;
-    user-select: none;
-    vertical-align: baseline;
-  }
-  .photo-credit .observation-timezone.is-visible{
-    color: inherit;
-    background: transparent;
-    user-select: text;
-  }
-  .photo-credit .observation-timezone:focus-visible{
-    outline: 1px solid var(--color-accent);
-    outline-offset: 2px;
-  }
 
   /* ---------- guess panel ---------- */
   .guess-panel{ padding: 14px; }
@@ -1000,7 +919,7 @@
     width: max-content;
     max-width: 300px;
     background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: 0 10px 28px var(--color-shadow);
     padding: 13px 15px;
@@ -1045,7 +964,7 @@
     padding: 3px;
     margin: 0 2px;
     vertical-align: -4px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     background: var(--color-surface-alt);
     color: var(--color-text-muted);
@@ -1064,7 +983,7 @@
     flex: 1;
     min-width: 160px;
     background: var(--color-bg-page-alt);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     color: var(--color-text-primary);
     padding: 12px 13px;
@@ -1081,7 +1000,7 @@
     text-transform: uppercase;
     cursor: pointer;
     border-radius: var(--radius);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     background: var(--color-surface-alt);
     color: var(--color-text-primary);
     padding: 12px 16px;
@@ -1134,26 +1053,6 @@
     border-color: var(--color-advance-bg-hover);
   }
 
-  /* Old #backBtn rule removed here — it absolutely-positioned the button
-     on its own (top:14px; right:158px) from before the icons were moved
-     into the .photo-top-controls flexbox. Its ID selector outranked the
-     .photo-back-corner class rule below, which is why the button sat off
-     on its own instead of lining up with sound/pick-me/theme. The
-     .photo-back-corner class already covers all of this button's styling
-     within the flex row. */
-
-  /* The map is prepared before reveal while remaining visually hidden. Keeping
-     the map container in layout lets Leaflet calculate its tile viewport. */
-  .obs-map-wrap.preloading{
-    display: flex;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .photo-card.revealed .obs-map-wrap.preloading{
-    visibility: visible;
-    pointer-events: auto;
-  }
-
   .panel-foot{
     display:flex;
     justify-content: space-between;
@@ -1181,7 +1080,7 @@
     align-items: center;
     gap: 10px;
     background: var(--color-bg-page-alt);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-left: 4px solid var(--color-text-muted);
     border-radius: var(--radius);
     padding: 9px 11px;
@@ -1344,7 +1243,7 @@
     width: 1px;
     min-height: 10px;
     margin-top: 3px;
-    background: color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    background: var(--color-border);
     opacity: 0.55;
   }
   .rung:last-child .rung-marker .tick{ display: none; }
@@ -1355,7 +1254,7 @@
   }
   .rung.revealed .rung-marker .tick{ background: var(--color-accent-soft); opacity: 0.85; }
 
-  .rung.revealed.auto .rung-marker .tick{ background: color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page)); opacity: 0.55; }
+  .rung.revealed.auto .rung-marker .tick{ background: var(--color-border); opacity: 0.55; }
   .rung.revealed.auto .rk-name{ color: var(--color-text-faint); }
   .rung.revealed.auto .rk-common{ color: var(--color-text-muted); }
 
@@ -1378,7 +1277,7 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-text-muted);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: 3px;
     padding: 1px 5px;
     vertical-align: middle;
@@ -1471,15 +1370,42 @@
   .rung.species-hit .rk-name{ color: var(--color-tier-species-dim); }
   .rung.species-hit .rk-common{ color: var(--color-tier-species-dim); }
 
-  /* ---------- solution panel (static, no collapse) ---------- */
+  /* ---------- solution folded panel ---------- */
   .reveal-details{
     margin-top: 16px;
-    border-top: 1px dashed color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
-    padding-top: 12px;
+    border-top: 1px dashed var(--color-border);
     display: none;
   }
   .reveal-details.show{
     display: block;
+  }
+  .reveal-details summary{
+    padding: 12px 8px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    transition: color 0.15s;
+    list-style: none; /* Hide default arrow in webkit */
+  }
+  .reveal-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .reveal-details summary::before {
+    content: "► ";
+    display: inline-block;
+    margin-right: 4px;
+    transition: transform 0.2s;
+  }
+  .reveal-details[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .reveal-details summary:hover{
+    color: var(--color-accent);
   }
 
   .reveal-box{
@@ -1496,12 +1422,6 @@
     margin-bottom: 14px;
   }
   .reveal-score b{ color: var(--color-accent); }
-  .reveal-score .link-icon{
-    width: 12px;
-    height: 12px;
-    vertical-align: -1.5px;
-    margin-right: 3px;
-  }
 
   .reveal-headline{
     margin-bottom: 14px;
@@ -1541,7 +1461,7 @@
   .reveal-box .similar-card{
     display: block;
     text-decoration: none;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     overflow: hidden;
     background: var(--color-bg-page-alt);
@@ -1581,7 +1501,9 @@
     display: none;
     position: absolute;
     right: 16px;
-    bottom: 16px;
+    /* Cleared past the photo-credit bar below the photo-frame, which sits
+       outside this wrap but still inside the same positioned .photo-card. */
+    bottom: 56px;
     z-index: 6;
     width: min(320px, 42vw);
     flex-direction: column;
@@ -1593,7 +1515,7 @@
     aspect-ratio: 1 / 1;
     border-radius: var(--radius) var(--radius) 0 0;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 2px solid var(--color-border);
     border-bottom-width: 1px;
     background: var(--color-bg-page-alt);
   }
@@ -1610,14 +1532,14 @@
     color: var(--color-text-muted);
     background: var(--color-surface-translucent);
     backdrop-filter: blur(3px);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 2px solid var(--color-border);
     border-top: none;
     border-radius: 0 0 var(--radius) var(--radius);
     padding: 6px 9px;
   }
   .obs-map-caption.show{ display: block; }
   @media (max-width: 860px){
-    .obs-map-wrap{ width: min(200px, 46vw); bottom: 16px; }
+    .obs-map-wrap{ width: min(200px, 46vw); bottom: 60px; }
   }
   footer.credits{
     margin-top: 34px;
@@ -1642,10 +1564,9 @@
     text-transform: uppercase;
     font-size: 10px;
   }
-  .region-row select,
-  .region-row input{
+  .region-row select{
     background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     color: var(--color-text-primary);
     border-radius: var(--radius);
     padding: 7px 10px;
@@ -1653,77 +1574,9 @@
     font-size: 12px;
     cursor: pointer;
   }
-  .region-input-wrap{
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-  }
-  .region-row input{
-    cursor: text;
-    width: 140px;
-    min-width: 90px;
-    max-width: 320px;
-    transition: width 0.12s ease;
-  }
-  .region-row input.has-flag{
-    padding-right: 28px;
-  }
-  .region-row input.is-error{
-    border-color: var(--color-danger);
-  }
-  .region-row input.is-error:focus{
-    outline-color: var(--color-danger);
-  }
-  .region-flag{
-    position: absolute;
-    right: 8px;
-    font-size: 14px;
-    line-height: 1;
-    pointer-events: none;
-  }
-  .region-row select:focus,
-  .region-row input:focus{ outline: 2px solid var(--color-accent); outline-offset: -1px; }
-  .region-row select:disabled,
-  .region-row input:disabled{ opacity: 0.5; cursor: wait; }
+  .region-row select:focus{ outline: 2px solid var(--color-accent); outline-offset: -1px; }
+  .region-row select:disabled{ opacity: 0.5; cursor: wait; }
   .region-status{ color: var(--color-text-muted); font-size: 11px; }
-  .region-status.is-error{ color: var(--color-danger); }
-
-  .region-suggest{
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    min-width: 220px;
-    max-width: 360px;
-    max-height: 260px;
-    overflow-y: auto;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
-    padding: 4px;
-    margin: 0;
-    list-style: none;
-    z-index: 50;
-    display: none;
-  }
-  .region-suggest.show{ display: block; }
-  .region-suggest-item{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
-    border-radius: calc(var(--radius) - 2px);
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--color-text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .region-suggest-item .rs-flag{ font-size: 13px; flex: 0 0 auto; }
-  .region-suggest-item .rs-label{ overflow: hidden; text-overflow: ellipsis; }
-  .region-suggest-item.is-active,
-  .region-suggest-item:hover{ background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
 
   .gamemode-row{
     display:flex;
@@ -1741,7 +1594,7 @@
   }
   .gamemode-row select{
     background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     color: var(--color-text-primary);
     border-radius: var(--radius);
     padding: 7px 10px;
@@ -1779,7 +1632,7 @@
     width: 190px;
     max-width: 36vw;
     height: 4px;
-    background: color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    background: var(--color-border);
     border-radius: 2px;
     cursor: pointer;
   }
@@ -1812,7 +1665,7 @@
     width: 42px;
     box-sizing: border-box;
     padding: 4px 5px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
     color: var(--color-text-primary);
@@ -1862,7 +1715,7 @@
   .pick-overlay.show{ display: flex; }
   .pick-modal{
     background: var(--color-surface);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     width: min(1280px, 98vw);
     height: min(94vh, 1000px);
@@ -1878,7 +1731,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 14px 18px 12px;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border-bottom: 1px solid var(--color-border);
     flex: 0 0 auto;
   }
   .pick-head-text .pk-eyebrow{
@@ -1925,7 +1778,7 @@
   }
   .pick-close{
     background: transparent;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     color: var(--color-text-muted);
     padding: 6px 11px;
     line-height: 1;
@@ -1946,7 +1799,7 @@
     border-radius: var(--radius);
     overflow: hidden;
     background: var(--color-bg-page-alt);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
   }
   .pick-photo::before{
     content: "";
@@ -2018,7 +1871,7 @@
     height: 100%;
     text-align: left;
     background: var(--color-bg-page-alt);
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     border-radius: var(--radius);
     overflow: hidden;
     padding: 0;
@@ -2055,7 +1908,7 @@
   .pick-cell.wrong{
     opacity: 0.28;
     pointer-events: none;
-    border-color: color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border-color: var(--color-border);
   }
   .pick-cell.wrong .pc-label{ color: var(--color-text-muted); }
   .pick-cell.correct{
@@ -2072,7 +1925,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 12px 18px 16px;
-    border-top: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border-top: 1px solid var(--color-border);
     flex: 0 0 auto;
   }
   .pick-progress{
@@ -2089,9 +1942,10 @@
 
   /* ---------- theme switcher ---------- */
   .theme-switcher{
-    position: relative;
+    position: absolute;
+    top: 14px;
+    right: 14px;
     z-index: 6;
-    flex: 0 0 40px;
   }
   .theme-toggle{
     width: 40px;
@@ -2101,7 +1955,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     background: var(--color-surface-translucent);
     color: var(--color-accent);
     backdrop-filter: blur(3px);
@@ -2120,7 +1974,7 @@
     gap: 6px;
     padding: 8px;
     border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     background: var(--color-surface);
     opacity: 0;
     transform: translateY(-4px) scale(0.97);
@@ -2138,7 +1992,7 @@
     height: 26px;
     padding: 0;
     border-radius: 4px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 2px solid var(--color-border);
     overflow: hidden;
     display: flex;
     cursor: pointer;
@@ -2155,7 +2009,7 @@
     gap: 8px;
     padding: 6px 2px 2px;
     margin-top: 2px;
-    border-top: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border-top: 1px solid var(--color-border);
   }
   .appearance-label{
     font-family: var(--font-mono);
@@ -2170,7 +2024,7 @@
     height: 22px;
     padding: 0;
     border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    border: 1px solid var(--color-border);
     background: var(--color-bg-page-alt);
     cursor: pointer;
     flex-shrink: 0;
@@ -2194,7 +2048,7 @@
   .appearance-switch-knob svg{ width: 10px; height: 10px; }
   [data-appearance="dark"] .appearance-switch-knob{ transform: translateX(18px); }
   @media (max-width: 560px){
-    .theme-switcher{ right: auto; top: auto; }
+    .theme-switcher{ right: 14px; top: 62px; }
   }
 </style>
 </head>
@@ -2211,12 +2065,10 @@
       </div>
 
       <div class="region-row">
-        <label for="regionInput">Region</label>
-        <span class="region-input-wrap">
-          <input type="text" id="regionInput" placeholder="Everywhere" autocomplete="off">
-          <span class="region-flag" id="regionFlag" aria-hidden="true"></span>
-          <ul class="region-suggest" id="regionSuggest" role="listbox" aria-label="Region suggestions"></ul>
-        </span>
+        <label for="regionSelect">Region</label>
+        <select id="regionSelect">
+          <option value="">Everywhere</option>
+        </select>
         <span class="region-status" id="regionStatus"></span>
       </div>
 
@@ -2236,21 +2088,6 @@
   <main class="grid">
     <div class="left-col">
       <div class="card photo-card">
-        <div class="photo-credit">
-          <span id="creditText">Loading observation from iNaturalist…</span>
-          <a id="creditLink" href="#" target="_blank" rel="noopener">view on iNaturalist ↗</a>
-        </div>
-        <div class="photo-stage">
-        <div class="photo-frame" id="photoFrame">
-          <div class="skeleton" id="skeleton"></div>
-        </div>
-        <div class="photo-top-controls" aria-label="Observation controls">
-        <button class="photo-back-corner" id="backBtn" type="button" hidden title="Go back to previous observation" aria-label="Go back to previous observation">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M9 6L3 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M4 12h10a6 6 0 0 1 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-          </svg>
-        </button>
         <button class="sound-corner" id="soundBtn" disabled title="Play call/song" aria-label="Play call or song">
           <svg id="soundBtnIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 9v6h4l5 5V4L8 9H4z"></path>
@@ -2325,11 +2162,16 @@
             </div>
           </div>
         </div>
-        </div>
+        <div class="photo-frame" id="photoFrame">
+          <div class="skeleton" id="skeleton"></div>
         </div>
         <div class="obs-map-wrap" id="obsMapWrap">
           <div class="obs-map-corner" id="obsMapCorner"></div>
           <div class="obs-map-caption" id="obsMapCaption"></div>
+        </div>
+        <div class="photo-credit">
+          <span id="creditText">Loading observation from iNaturalist…</span>
+          <a id="creditLink" href="#" target="_blank" rel="noopener">view on iNaturalist ↗</a>
         </div>
       </div>
     </div>
@@ -2366,10 +2208,11 @@
         <div class="best-line" id="bestLine"></div>
         <div class="ladder" id="ladder"></div>
         
-        <!-- Solution panel (static, no collapse) -->
-        <div class="reveal-details" id="revealDetails">
+        <!-- Collapsible solution panel -->
+        <details class="reveal-details" id="revealDetails" open>
+          <summary id="revealSummary">Species Information & Solution</summary>
           <div class="reveal-box" id="revealBox"></div>
-        </div>
+        </details>
       </div>
     </div>
   </main>
@@ -2446,53 +2289,26 @@
   let cladeId = urlTaxonId || gamemode.q; // 3 = Aves (birds) by default
 
   let placeId = params.get("place_id") || null;
-  // Tracks the region field's last *committed* (i.e. successfully resolved,
-  // or deliberately cleared) value/place, so we can snap the input back to
-  // it whenever it's showing a stale error from an unresolved edit — e.g.
-  // when a new round loads while the field still has invalid typed text.
-  let committedRegionValue = "";
-  let committedRegionPlace = null;
 
-  // Region search is intentionally limited to countries (admin level 0)
-  // and first-level administrative divisions (admin level 10: states,
-  // provinces, regions, etc.). This keeps towns, counties, lakes, parks,
-  // and other lower-level/community-curated places out of the selector.
-  const ALLOWED_REGION_ADMIN_LEVELS = new Set([0, 10]);
-
-  // admin_level is the important hierarchy field, but we also require a
-  // genuinely administrative place type at level 10. iNaturalist can have
-  // community-curated places whose metadata is broad enough that relying on
-  // admin_level alone can admit things like clubs, parks, and other POIs.
-  // These are the first-level-ish administrative types we want to expose.
-  const ALLOWED_REGION_ADMIN_PLACE_TYPES = new Set([
-    8,    // State
-    10,   // Local Administrative Area
-    21,   // Region
-    101,  // Territory
-    102,  // District
-    103,  // Province
-    1002, // Department Segment / department-style admin
-    1005, // Governorate
-    1006, // Prefecture
-    1007, // Canton
-    1008, // Republic
-    1009, // Division
-    1010, // Subdivision
-    1014, // Shire
-    1015, // Prefecture City
-    1016, // Regency
-    1018, // Local Authority
-    1020  // Delegation
-  ]);
-
-  function isAllowedRegionPlace(place){
-    if(!place) return false;
-    const adminLevel = Number(place.admin_level);
-    if(adminLevel === 0) return true; // countries
-    if(adminLevel !== 10) return false;
-    return ALLOWED_REGION_ADMIN_PLACE_TYPES.has(Number(place.place_type));
-  }
-
+  const REGIONS = [
+    { label: "🌍 Everywhere", q: null },
+    { label: "North America", q: "North America" },
+    { label: "South America", q: "South America" },
+    { label: "Europe", q: "Europe" },
+    { label: "Africa", q: "Africa" },
+    { label: "Asia", q: "Asia" },
+    { label: "Oceania", q: "Oceania" },
+    { label: "Australia", q: "Australia" },
+    { label: "United States", q: "United States" },
+    { label: "Canada", q: "Canada" },
+    { label: "United Kingdom", q: "United Kingdom" },
+    { label: "Mexico", q: "Mexico" },
+    { label: "Brazil", q: "Brazil" },
+    { label: "India", q: "India" },
+    { label: "Japan", q: "Japan" },
+    { label: "New Zealand", q: "New Zealand" },
+    { label: "South Africa", q: "South Africa" },
+  ];
   const placeIdCache = {};
 
   const RANKS = ["kingdom","phylum","class","order","family","genus","species"];
@@ -2509,7 +2325,7 @@
   let soundToken = 0;
   let currentAudio = null;
   let soundMuted = false; // user's mute preference, persists across rounds
-  let audioUnlocked = false; // true only after the sound button has been explicitly pressed
+  let audioUnlocked = false; // true once the page has had a real user gesture
 
   const el = {
     photoCard: document.querySelector(".photo-card"),
@@ -2526,7 +2342,6 @@
     soundBtn: document.getElementById("soundBtn"),
     soundBtnIcon: document.getElementById("soundBtnIcon"),
     advanceBtn: document.getElementById("advanceBtn"),
-    backBtn: document.getElementById("backBtn"),
     pickOverlay: document.getElementById("pickOverlay"),
     pickPhotoImg: document.getElementById("pickPhotoImg"),
     pickTitle: document.getElementById("pickTitle"),
@@ -2540,13 +2355,12 @@
     ladder: document.getElementById("ladder"),
     bestLine: document.getElementById("bestLine"),
     revealDetails: document.getElementById("revealDetails"),
+    revealSummary: document.getElementById("revealSummary"),
     revealBox: document.getElementById("revealBox"),
     errBanner: document.getElementById("errBanner"),
     hintText: document.getElementById("hintText"),
     gamemodeSelect: document.getElementById("gamemodeSelect"),
-    regionInput: document.getElementById("regionInput"),
-    regionFlag: document.getElementById("regionFlag"),
-    regionSuggest: document.getElementById("regionSuggest"),
+    regionSelect: document.getElementById("regionSelect"),
     regionStatus: document.getElementById("regionStatus"),
     raritySlider: document.getElementById("raritySlider"),
     rarityNumber: document.getElementById("rarityNumber"),
@@ -2649,25 +2463,67 @@
       hrank: "species",
       lrank: "species",
       per_page: "500",
+      // species_counts is returned ordered by observation count. Ask iNaturalist
+      // for the appropriate end of that distribution instead of taking the
+      // default (most-observed) page and then pretending it contains the rare
+      // species. This is the critical fix for Rarity 100.
+      order: rarity >= 50 ? "asc" : "desc",
     });
     if(placeId) qs.set("place_id", placeId);
-    const data = await fetchJSON(`${API}/observations/species_counts?${qs.toString()}`);
-    const pool = (data.results || []).filter(r => r.taxon && r.count > 0);
+    const speciesCountsPromise = fetchJSON(`${API}/observations/species_counts?${qs.toString()}`);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Species rarity lookup timed out.")), 12000)
+    );
+    const data = await Promise.race([speciesCountsPromise, timeoutPromise]);
+    const pool = (data.results || []).filter(r => r.taxon && Number(r.count) > 0);
     speciesPoolCache[cacheKey] = pool;
     return pool;
   }
 
   function pickWeightedSpecies(pool, diff){
-    const k = (50 - diff) / 50; // +1 .. 0 .. -1
-    const weights = pool.map(r => Math.pow(Math.max(r.count, 1), k));
+    if(!pool.length) return null;
+
+    // Rarity is based on the species' actual iNaturalist observation count.
+    // Sort once by count so the slider operates on the rarity distribution
+    // itself rather than merely applying a weak power to huge counts.
+    const ranked = pool
+      .filter(r => r && r.taxon && Number(r.count) > 0)
+      .slice()
+      .sort((a, b) => Number(a.count) - Number(b.count));
+
+    if(!ranked.length) return pick(pool);
+
+    // 0 = most common (Backyard), 100 = rarest (Very Rare).
+    // At the endpoints, deliberately choose the extreme of the rarity pool.
+    // At 50, every species has equal probability ("Balanced").
+    if(diff <= 0) return ranked[ranked.length - 1];
+    if(diff >= 100) return ranked[0];
+    if(diff === 50) return pick(ranked);
+
+    const target = diff >= 50 ? ((diff - 50) / 50) : (1 - (diff / 50));
+    const denom = Math.max(ranked.length - 1, 1);
+
+    // The closer we are to an endpoint, the tighter the rarity band.
+    // This makes high rarity genuinely rare rather than merely "a bit
+    // less common", while retaining a broad mix around the midpoint.
+    const edgeDistance = Math.abs(diff - 50) / 50;
+    const temperature = 0.42 - (0.36 * edgeDistance);
+
+    const weights = ranked.map((r, i) => {
+      const position = i / denom;
+      const distance = Math.abs(position - target);
+      return Math.exp(-distance / Math.max(temperature, 0.06));
+    });
+
     const total = weights.reduce((a, b) => a + b, 0);
-    if(!(total > 0)) return pick(pool);
-    let r = Math.random() * total;
-    for(let i = 0; i < pool.length; i++){
-      r -= weights[i];
-      if(r <= 0) return pool[i];
+    if(!(total > 0)) return ranked[Math.round(target * denom)];
+
+    let roll = Math.random() * total;
+    for(let i = 0; i < ranked.length; i++){
+      roll -= weights[i];
+      if(roll <= 0) return ranked[i];
     }
-    return pool[pool.length - 1];
+    return ranked[ranked.length - 1];
   }
 
   async function fetchObservationsForTaxon(taxonId){
@@ -2692,14 +2548,20 @@
       const pool = await fetchSpeciesPool();
       if(!pool.length) return fetchRandomObservationUniform();
 
-      const maxTries = Math.min(5, pool.length);
-      const tried = new Set();
+      // Keep the candidate set bounded. At the extreme ends the picker is
+      // intentionally concentrated, so sample a few distinct species without
+      // ever allowing a duplicate-selection loop.
+      const maxTries = Math.min(8, pool.length);
       const candidates = [];
-      while(candidates.length < maxTries){
-        const candidate = pickWeightedSpecies(pool, rarity);
-        if(tried.has(candidate.taxon.id)) continue;
-        tried.add(candidate.taxon.id);
+      const available = pool.slice();
+
+      while(candidates.length < maxTries && available.length){
+        const candidate = pickWeightedSpecies(available, rarity);
+        if(!candidate) break;
         candidates.push(candidate);
+
+        const idx = available.findIndex(r => r.taxon.id === candidate.taxon.id);
+        if(idx >= 0) available.splice(idx, 1);
       }
 
       // These lookups don't depend on each other — fire them all at once
@@ -2710,6 +2572,14 @@
       );
       for(const result of settled){
         if(result.status === "fulfilled" && result.value.length) return pick(result.value);
+      }
+
+      // All selected species failed to yield a usable observation. Retry the
+      // rarity pool only a small, bounded number of times. Never recurse
+      // indefinitely, because a clade with sparse/invalid photo coverage can
+      // otherwise make the UI appear to hang.
+      if(attempt < 2){
+        return fetchRandomObservation(attempt + 1);
       }
       return fetchRandomObservationUniform();
     }catch(e){
@@ -2919,13 +2789,7 @@
       if(myToken !== soundToken) return; // superseded by a newer round
       state.sound = candidates.length ? { candidates, index: 0 } : null;
       if(state.sound){
-        // Do not start audio merely because the page was interacted with.
-        // Playback is opt-in: the sound button must be pressed at least once.
-        if(audioUnlocked){
-          playCurrentSoundCandidate();
-        }else{
-          setSoundButtonState("ready");
-        }
+        playCurrentSoundCandidate();
       }else{
         setSoundButtonState("none");
       }
@@ -2957,6 +2821,7 @@
       }
     });
     currentAudio.play().then(() => {
+      audioUnlocked = true;
       setSoundButtonState(soundMuted ? "muted" : "playing");
     }).catch(() => {
       // The browser is blocking audio until the page has had a genuine
@@ -2971,7 +2836,6 @@
 
   function toggleBirdSound(){
     if(!state || !state.sound) return;
-    // The sound button is the only action that opts the user into audio.
     audioUnlocked = true;
     if(currentAudio && !currentAudio.paused){
       soundMuted = !soundMuted;
@@ -3019,118 +2883,9 @@
 
   // ---------- round lifecycle ----------
   let roundToken = 0;
-  const roundHistory = [];
-  const MAX_ROUND_HISTORY = 20;
-
-  function updateBackButton(){
-    if(!el.backBtn) return;
-    el.backBtn.hidden = roundHistory.length === 0;
-    el.backBtn.disabled = roundHistory.length === 0;
-  }
-
-  function snapshotCurrentRound(){
-    if(!state) return;
-    roundHistory.push({
-      state,
-      mysteryFrameHTML,
-      currentOriginalPhotoUrl,
-      photoFrameHTML: el.photoFrame.innerHTML,
-      feedHTML: el.feed.innerHTML,
-      bestLineHTML: el.bestLine.innerHTML,
-      revealBoxHTML: el.revealBox.innerHTML,
-      revealDetailsShown: el.revealDetails.classList.contains("show"),
-      photoCardRevealed: el.photoCard.classList.contains("revealed")
-    });
-    if(roundHistory.length > MAX_ROUND_HISTORY) roundHistory.shift();
-    updateBackButton();
-  }
-
-  async function restorePreviousRound(){
-    if(!roundHistory.length) return;
-    const snapshot = roundHistory.pop();
-    ++roundToken;
-    // Invalidate any sound lookup still in flight for the round being left,
-    // and stop whatever's currently playing — otherwise that fetch resolves
-    // after the restore and writes its result onto the restored round's
-    // `state` (the outer `state` variable has already been reassigned by
-    // then), and the restored round's own sound button state never gets
-    // applied.
-    ++soundToken;
-    stopBirdSound();
-    clearError();
-    resetRegionInputToCommitted();
-    closePickOverlay();
-    resetPanel();
-
-    state = snapshot.state;
-    mysteryFrameHTML = snapshot.mysteryFrameHTML || snapshot.photoFrameHTML || "";
-    currentOriginalPhotoUrl = snapshot.currentOriginalPhotoUrl || null;
-
-    el.photoFrame.innerHTML = snapshot.photoFrameHTML || "";
-    el.feed.innerHTML = snapshot.feedHTML || "";
-    el.bestLine.innerHTML = snapshot.bestLineHTML || "";
-    el.revealBox.innerHTML = snapshot.revealBoxHTML || "";
-    el.revealDetails.classList.toggle("show", !!snapshot.revealDetailsShown);
-    el.photoCard.classList.toggle("revealed", !!snapshot.photoCardRevealed);
-
-    renderLadder();
-    updateLadderReveal(-1);
-
-    // Sync the sound button to the restored round's own sound state —
-    // it was never captured in the snapshot, so without this the button
-    // is just left showing whatever state the abandoned round left it in.
-    if(state.sound){
-      if(audioUnlocked) playCurrentSoundCandidate();
-      else setSoundButtonState("ready");
-    }else if(state.sound === null){
-      setSoundButtonState("none");
-    }else{
-      // Sound lookup for this round hadn't resolved yet when it was
-      // snapshotted — kick it off again rather than leaving the button
-      // stuck on "loading" with nothing to complete it.
-      loadSoundForRound(state.detail.id, state.detail.name);
-    }
-
-    if(snapshot.photoCardRevealed){
-      el.guessInput.disabled = true;
-      el.guessBtn.disabled = true;
-      el.pickBtn.disabled = true;
-      el.advanceBtn.disabled = false;
-      updateAdvanceButton();
-      // Recreate the revealed map from the restored observation/taxon.
-      const obsCoords = getObsLatLng(state.obs);
-      initRevealMap(state.detail.id, obsCoords);
-      refreshRevealSoundLine();
-    }else{
-      el.guessInput.disabled = false;
-      el.guessBtn.disabled = false;
-      el.pickBtn.disabled = false;
-      el.advanceBtn.disabled = false;
-      el.obsMapWrap.classList.remove("preloading");
-      el.obsMapWrap.style.display = "";
-      el.revealDetails.classList.remove("show");
-      el.revealBox.innerHTML = "";
-      updateAdvanceButton();
-      el.guessInput.focus();
-      // Keep the current round's reveal map warmed even while unrevealed.
-      preloadRevealMapForState(state);
-    }
-
-    updateBackButton();
-  }
-
-  function preloadRevealMapForState(roundState){
-    if(!roundState || !roundState.detail) return;
-    const obsCoords = getObsLatLng(roundState.obs);
-    el.obsMapWrap.classList.add("preloading");
-    initRevealMap(roundState.detail.id, obsCoords).catch(e => console.error(e));
-  }
-
   async function loadNewRound(){
-    if(state) snapshotCurrentRound();
     const myToken = ++roundToken;
     clearError();
-    resetRegionInputToCommitted();
     resetPanel();
     setLoading(true);
     try{
@@ -3151,11 +2906,6 @@
         finished: false,
       };
 
-      // Warm the reveal map immediately. It remains redacted/hidden until the
-      // species is revealed, but its Leaflet instance, tiles, and range data
-      // are fetched while the player is still guessing.
-      preloadRevealMapForState(state);
-
       fetchLiveWikiSummary(detail.wikipedia_url).then(summary => {
         if(myToken !== roundToken || !summary) return;
         state.liveWikiSummary = summary;
@@ -3174,6 +2924,7 @@
       el.feed.innerHTML = "";
       el.bestLine.textContent = "";
       el.revealDetails.classList.remove("show");
+      el.revealDetails.open = true;
       setLoading(false);
     }catch(e){
       if(myToken !== roundToken) return;
@@ -3186,11 +2937,11 @@
           // or South American clade with a region that has no records of it)
           // rather than a real outage — clear the region instead of retrying
           // the same doomed query forever.
-          const regionLabel = el.regionInput.value.trim() || "that region";
+          const regionOpt = el.regionSelect.options[el.regionSelect.selectedIndex];
+          const regionLabel = (regionOpt && regionOpt.value) ? regionOpt.textContent : "that region";
           showError(`No observations found for "${modeLabel}" in ${regionLabel} — switching region to Everywhere.`);
           placeId = null;
-          el.regionInput.value = "";
-          setRegionFlag(null);
+          el.regionSelect.value = "";
           const url = new URL(location.href);
           url.searchParams.delete("place_id");
           history.replaceState(null, "", url);
@@ -3281,163 +3032,8 @@
       img.src = url;
 
       const login = (obs.user && (obs.user.name || obs.user.login)) || "unknown observer";
-      const profileUrl = (obs.user && obs.user.uri) || (login !== "unknown observer"
-        ? `https://www.inaturalist.org/people/${encodeURIComponent(obs.user.login || login)}`
-        : "#");
-      const safeLogin = String(login).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
       const license = (obs.photos[0] && obs.photos[0].license_code) ? obs.photos[0].license_code.toUpperCase() : "© all rights reserved";
-
-      // iNaturalist stores observation time as a timezone-aware timestamp in
-      // `time_observed_at` (for example 2025-08-20T18:21:00+03:00), while
-      // `observed_on` is date-oriented.  Do NOT pass the observation timestamp
-      // through Date(), toISOString(), or any locale conversion: those APIs
-      // convert the value to the browser's timezone/UTC and can turn a local
-      // observation into 00:00 UTC.  We deliberately read the wall-clock
-      // components directly from iNaturalist's timestamp and pair them with
-      // iNaturalist's recorded `observed_time_zone`.
-      function timezoneCode(timezone, timestamp){
-        if(!timezone) return "";
-        const tz = String(timezone);
-
-        // iNaturalist supplies IANA timezone names. Display the appropriate
-        // human timezone code while retaining the exact IANA location after it.
-        // The code is selected for the observation date, so NZST/NZDT and other
-        // daylight-saving zones are not guessed from the browser's current date.
-        const aliases = {
-          "Pacific/Auckland": ["NZST", "NZDT"],
-          "Pacific/Chatham": ["CHAST", "CHADT"],
-          "Australia/Sydney": ["AEST", "AEDT"],
-          "Australia/Melbourne": ["AEST", "AEDT"],
-          "Australia/Brisbane": ["AEST", "AEST"],
-          "Australia/Adelaide": ["ACST", "ACDT"],
-          "Australia/Darwin": ["ACST", "ACST"],
-          "Australia/Perth": ["AWST", "AWST"],
-          "Pacific/Honolulu": ["HST", "HST"],
-          "America/Los_Angeles": ["PST", "PDT"],
-          "America/Denver": ["MST", "MDT"],
-          "America/Chicago": ["CST", "CDT"],
-          "America/New_York": ["EST", "EDT"],
-          "Europe/London": ["GMT", "BST"],
-          "Europe/Dublin": ["GMT", "IST"],
-          "Europe/Paris": ["CET", "CEST"],
-          "Europe/Berlin": ["CET", "CEST"],
-          "Europe/Madrid": ["CET", "CEST"],
-          "Europe/Rome": ["CET", "CEST"],
-          "Asia/Tokyo": ["JST", "JST"],
-          "Asia/Seoul": ["KST", "KST"],
-          "Asia/Shanghai": ["CST", "CST"],
-          "Asia/Hong_Kong": ["HKT", "HKT"],
-          "Asia/Singapore": ["SGT", "SGT"],
-          "Asia/Kolkata": ["IST", "IST"],
-          "Asia/Dubai": ["GST", "GST"],
-          "Africa/Johannesburg": ["SAST", "SAST"]
-        };
-
-        const pair = aliases[tz];
-        if(pair){
-          // A timestamp with an explicit offset is enough to determine which
-          // side of a DST boundary the observation belongs to. For ambiguous
-          // cases, compare the timestamp's numeric offset with the zone's
-          // standard/daylight offsets using the same local wall-clock date.
-          const hasDst = isDaylightTime(tz, timestamp);
-          return `${hasDst ? pair[1] : pair[0]} · ${tz}`;
-        }
-
-        // For less common zones, use Intl's timezone abbreviation when the
-        // browser provides one, then retain the exact IANA location.
-        try{
-          const probe = timestamp || new Date().toISOString();
-          const parts = new Intl.DateTimeFormat("en-US", {
-            timeZone: tz, timeZoneName: "short", year: "numeric", month: "2-digit", day: "2-digit"
-          }).formatToParts(new Date(probe));
-          const name = parts.find(part => part.type === "timeZoneName")?.value || tz;
-          return `${name} · ${tz}`;
-        }catch(_){
-          return tz;
-        }
-      }
-
-      function isDaylightTime(timezone, timestamp){
-        if(!timestamp) return false;
-        const explicitOffset = timestamp.match(/(?:Z|([+-])(\d{2}):?(\d{2}))$/);
-        if(!explicitOffset || !explicitOffset[1]) return false;
-        const sign = explicitOffset[1] === "+" ? 1 : -1;
-        const observedOffset = sign * (Number(explicitOffset[2]) * 60 + Number(explicitOffset[3]));
-        try{
-          const date = new Date(timestamp);
-          const jan = new Date(Date.UTC(date.getUTCFullYear(), 0, 1, 12));
-          const jul = new Date(Date.UTC(date.getUTCFullYear(), 6, 1, 12));
-          const offsetAt = d => {
-            const parts = new Intl.DateTimeFormat("en-US", {
-              timeZone: timezone,
-              timeZoneName: "longOffset",
-              hour: "2-digit"
-            }).formatToParts(d);
-            const v = parts.find(part => part.type === "timeZoneName")?.value || "";
-            const m = v.match(/GMT([+-])(\d{2})(?::(\d{2}))?/);
-            if(!m) return null;
-            return (m[1] === "+" ? 1 : -1) * (Number(m[2]) * 60 + Number(m[3] || 0));
-          };
-          const standard = Math.min(offsetAt(jan), offsetAt(jul));
-          const daylight = Math.max(offsetAt(jan), offsetAt(jul));
-          return daylight !== standard && observedOffset === daylight;
-        }catch(_){
-          return false;
-        }
-      }
-
-      function formatObservationDateTime(obs){
-        const details = obs.observed_on_details || {};
-        const timestamp = typeof obs.time_observed_at === "string" ? obs.time_observed_at : "";
-        const observedDate = details.date || (typeof obs.observed_on === "string" ? obs.observed_on.slice(0, 10) : "");
-        const observedTimezone = obs.observed_time_zone || "";
-
-        if(!observedDate) return { text: "date/time unknown", timezone: "" };
-
-        const dateParts = observedDate.slice(0, 10).split("-");
-        const formattedDate = dateParts.length === 3
-          ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
-          : observedDate;
-
-        // Never construct a Date from the observation timestamp for display.
-        // iNaturalist's timestamp contains the local wall-clock time and its
-        // offset; extracting the clock text preserves the original observation
-        // time exactly instead of converting it to UTC/browser time.
-        const match = timestamp.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/);
-        if(match){
-          const time = `${match[2]}:${match[3]}`;
-          return {
-            text: `${formattedDate} ${time}`,
-            timezone: timezoneCode(observedTimezone, timestamp)
-          };
-        }
-
-        const observedString = typeof obs.observed_on_string === "string" ? obs.observed_on_string : "";
-        const stringTime = observedString.match(/(?:T|\s)(\d{1,2}):(\d{2})(?::\d{2})?/);
-        if(stringTime){
-          const time = `${String(stringTime[1]).padStart(2, "0")}:${stringTime[2]}`;
-          return {
-            text: `${formattedDate} ${time}`,
-            timezone: timezoneCode(observedTimezone, timestamp)
-          };
-        }
-
-        // iNaturalist may provide an hour-only value for some observations.
-        // Do not display that as a partial time: if a real observation time
-        // is not encoded, suppress ALL time information, including timezone.
-        if(Number.isInteger(details.hour)){
-          return { text: formattedDate, timezone: "" };
-        }
-
-        // Date-only observation: no time and no timezone should be shown.
-        return { text: formattedDate, timezone: "" };
-      }
-
-      const observationDateTime = formatObservationDateTime(obs);
-      const timezoneHTML = observationDateTime.timezone
-        ? `<button type="button" class="observation-timezone" aria-label="Reveal observation timezone" title="Click to reveal timezone">${observationDateTime.timezone.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")}</button>`
-        : "";
-      el.creditText.innerHTML = `Observed by <a class="credit-author" href="${profileUrl}" target="_blank" rel="noopener">${safeLogin}</a> · ${observationDateTime.text}${timezoneHTML ? ` ${timezoneHTML}` : ""} · ${license}`;
+      el.creditText.textContent = `Observed by ${login} · ${license}`;
       el.creditLink.href = obs.uri || `https://www.inaturalist.org/observations/${obs.id}`;
     });
   }
@@ -3549,7 +3145,6 @@
     const label = RANK_LABELS[node.rank] || node.rank;
     tierGridActive = true;
     el.obsMapWrap.style.display = "none";
-    el.obsMapWrap.classList.remove("preloading");
     el.photoFrame.innerHTML = `
       <div class="tier-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">${imgs}</div>
       <div class="tier-grid-label">${label} <i>${node.name}</i></div>
@@ -3597,7 +3192,6 @@
       el.photoFrame.innerHTML = mysteryFrameHTML;
     }
     el.obsMapWrap.style.display = "";
-    if(state && !state.finished) el.obsMapWrap.classList.add("preloading");
   }
 
   // ---------- taxon resolution + scoring ----------
@@ -3950,13 +3544,10 @@
     }
   }
 
-  const LINK_ICON_SOUND = '<svg class="link-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z"></path><path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path><path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path></svg>';
-  const LINK_ICON_EYE = '<svg class="link-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"></circle></svg>';
-
   function soundLineHTML(){
     const soundCandidate = state && state.sound && state.sound.candidates[state.sound.index];
     if(!soundCandidate || !soundCandidate.uri) return "";
-    return ` | <a href="${soundCandidate.uri}" target="_blank" rel="noopener">${LINK_ICON_SOUND}Audio recording ↗</a>`;
+    return ` | <a href="${soundCandidate.uri}" target="_blank" rel="noopener">Audio recording ↗</a>`;
   }
 
   function refreshRevealSoundLine(){
@@ -4146,7 +3737,7 @@
     const mapCaptionBits = [];
     if(placeGuess) mapCaptionBits.push(placeGuess);
     if(!obsCoords) mapCaptionBits.push("exact coordinates not shared for this observation");
-    else if(state.obs.obscured) mapCaptionBits.push("(exact location obscured)");
+    else if(state.obs.obscured) mapCaptionBits.push("location obscured/randomized for this species");
     const mapCaptionText = mapCaptionBits.join(" — ");
     if(mapCaptionText){
       el.obsMapCaption.textContent = mapCaptionText;
@@ -4157,7 +3748,10 @@
     }
 
     el.revealBox.innerHTML = `
-      <div class="reveal-score"><a href="${state.obs.uri}" target="_blank" rel="noopener">${LINK_ICON_EYE}View this observation ↗</a><span id="revealSoundLine">${soundHTML}</span></div>
+      <div class="reveal-score">${solved
+        ? `Solved in ${state.guesses} guess${state.guesses === 1 ? "" : "es"}.`
+        : `Answer revealed.`
+      } <a href="${state.obs.uri}" target="_blank" rel="noopener">View this observation ↗</a><span id="revealSoundLine">${soundHTML}</span></div>
       ${headline}
       ${about}
       <div class="reveal-section" id="similarSection">
@@ -4191,22 +3785,19 @@
   function finishRound(solved){
     if(!state || state.finished) return;
     state.finished = true;
-    revealObservationTimezone();
 
     const prevRevealIdx = state.revealIdx;
     state.revealIdx = state.chain.length - 1;
     updateLadderReveal(prevRevealIdx);
 
+    // Dynamic Summary Text
+    const name = state.detail.preferred_common_name || state.detail.name;
+    el.revealSummary.textContent = solved ? `Solved: ${name}` : `Revealed: ${name}`;
+
     el.revealDetails.classList.add("show");
     renderRevealDetails(state, solved);
 
     el.photoCard.classList.add("revealed");
-    el.obsMapWrap.classList.remove("preloading");
-    el.obsMapWrap.style.display = "";
-
-    // The map was warmed during the guessing phase. Give Leaflet a fresh size
-    // now that the reveal container is visible.
-    if(revealMapInstance) setTimeout(() => revealMapInstance.invalidateSize(), 0);
 
     el.guessInput.disabled = true;
     el.guessBtn.disabled = true;
@@ -4488,389 +4079,61 @@
   }
 
   // ---------- region / place selector ----------
-  // Regional-indicator flag emoji from a 2-letter ISO country code — no
-  // hardcoded flag table needed, Unicode does this arithmetically.
-  function flagEmojiFromCountryCode(code){
-    if(!code || !/^[A-Za-z]{2}$/.test(code)) return "";
-    const base = 0x1F1E6; // regional indicator symbol letter A
-    return String.fromCodePoint(...[...code.toUpperCase()].map(c => base + c.charCodeAt(0) - 65));
-  }
-
-  // ISO 3166-1 alpha-2 codes keyed by the common English country name, so a
-  // country-level place (whose display_name is just its own name, with no
-  // trailing code) can still get a flag. Only used when iNaturalist marks
-  // the place as an actual country (admin_level 0) — multi-country regions
-  // like continents or oceans never match a name here anyway, but the
-  // admin_level check keeps this from misfiring on same-named places.
-  const COUNTRY_CODE_BY_NAME = {
-    "afghanistan":"AF","albania":"AL","algeria":"DZ","andorra":"AD","angola":"AO",
-    "antigua and barbuda":"AG","argentina":"AR","armenia":"AM","australia":"AU",
-    "austria":"AT","azerbaijan":"AZ","bahamas":"BS","bahrain":"BH","bangladesh":"BD",
-    "barbados":"BB","belarus":"BY","belgium":"BE","belize":"BZ","benin":"BJ",
-    "bhutan":"BT","bolivia":"BO","bosnia and herzegovina":"BA","botswana":"BW",
-    "brazil":"BR","brunei":"BN","bulgaria":"BG","burkina faso":"BF","burundi":"BI",
-    "cabo verde":"CV","cape verde":"CV","cambodia":"KH","cameroon":"CM","canada":"CA",
-    "central african republic":"CF","chad":"TD","chile":"CL","china":"CN",
-    "colombia":"CO","comoros":"KM","costa rica":"CR","croatia":"HR","cuba":"CU",
-    "cyprus":"CY","czechia":"CZ","czech republic":"CZ",
-    "democratic republic of the congo":"CD","denmark":"DK","djibouti":"DJ",
-    "dominica":"DM","dominican republic":"DO","ecuador":"EC","egypt":"EG",
-    "el salvador":"SV","equatorial guinea":"GQ","eritrea":"ER","estonia":"EE",
-    "eswatini":"SZ","ethiopia":"ET","fiji":"FJ","finland":"FI","france":"FR",
-    "gabon":"GA","gambia":"GM","georgia":"GE","germany":"DE","ghana":"GH",
-    "greece":"GR","grenada":"GD","guatemala":"GT","guinea":"GN",
-    "guinea-bissau":"GW","guyana":"GY","haiti":"HT","honduras":"HN",
-    "hungary":"HU","iceland":"IS","india":"IN","indonesia":"ID","iran":"IR",
-    "iraq":"IQ","ireland":"IE","israel":"IL","italy":"IT","ivory coast":"CI",
-    "côte d'ivoire":"CI","jamaica":"JM","japan":"JP","jordan":"JO",
-    "kazakhstan":"KZ","kenya":"KE","kiribati":"KI","kosovo":"XK","kuwait":"KW",
-    "kyrgyzstan":"KG","laos":"LA","latvia":"LV","lebanon":"LB","lesotho":"LS",
-    "liberia":"LR","libya":"LY","liechtenstein":"LI","lithuania":"LT",
-    "luxembourg":"LU","madagascar":"MG","malawi":"MW","malaysia":"MY",
-    "maldives":"MV","mali":"ML","malta":"MT","marshall islands":"MH",
-    "mauritania":"MR","mauritius":"MU","mexico":"MX","micronesia":"FM",
-    "moldova":"MD","monaco":"MC","mongolia":"MN","montenegro":"ME",
-    "morocco":"MA","mozambique":"MZ","myanmar":"MM","namibia":"NA",
-    "nauru":"NR","nepal":"NP","netherlands":"NL","new zealand":"NZ",
-    "nicaragua":"NI","niger":"NE","nigeria":"NG","north korea":"KP",
-    "north macedonia":"MK","norway":"NO","oman":"OM","pakistan":"PK",
-    "palau":"PW","palestine":"PS","panama":"PA","papua new guinea":"PG",
-    "paraguay":"PY","peru":"PE","philippines":"PH","poland":"PL",
-    "portugal":"PT","qatar":"QA","republic of the congo":"CG","congo":"CG",
-    "romania":"RO","russia":"RU","rwanda":"RW",
-    "saint kitts and nevis":"KN","saint lucia":"LC",
-    "saint vincent and the grenadines":"VC","samoa":"WS","san marino":"SM",
-    "sao tome and principe":"ST","saudi arabia":"SA","senegal":"SN",
-    "serbia":"RS","seychelles":"SC","sierra leone":"SL","singapore":"SG",
-    "slovakia":"SK","slovenia":"SI","solomon islands":"SB","somalia":"SO",
-    "south africa":"ZA","south korea":"KR","south sudan":"SS","spain":"ES",
-    "sri lanka":"LK","sudan":"SD","suriname":"SR","sweden":"SE",
-    "switzerland":"CH","syria":"SY","taiwan":"TW","tajikistan":"TJ",
-    "tanzania":"TZ","thailand":"TH","timor-leste":"TL","togo":"TG",
-    "tonga":"TO","trinidad and tobago":"TT","tunisia":"TN","turkey":"TR",
-    "türkiye":"TR","turkmenistan":"TM","tuvalu":"TV","uganda":"UG",
-    "ukraine":"UA","united arab emirates":"AE","united kingdom":"GB",
-    "united states":"US","united states of america":"US","uruguay":"UY",
-    "uzbekistan":"UZ","vanuatu":"VU","vatican city":"VA","venezuela":"VE",
-    "vietnam":"VN","yemen":"YE","zambia":"ZM","zimbabwe":"ZW",
-  };
-
-  // iNaturalist place display_names are usually comma-separated and end in
-  // a 2-letter country code, e.g. "Otago, NZ" or "Ensenada, MX-BN, MX" — a
-  // place *within* a country. But some display_names glue the last two
-  // segments together without a comma (e.g. "Greater Sydney Area, NSW AU"),
-  // so rather than only checking the last comma-split segment, look for a
-  // trailing 2-letter code preceded by either a comma or a plain space.
-  // A country place itself has no such suffix (its display_name is just
-  // its own name), so fall back to a name lookup when iNaturalist marks
-  // the place as a country (admin_level 0). Places that aren't a single
-  // country (continents, "Everywhere", oceans, the EU) won't match either
-  // check, and simply get no flag.
-  const countryCodeCache = new Map();
-  const countryCodePending = new Map();
-
-  // Return a country code immediately when iNaturalist gives us one.
-  // Community-curated places often do not, however, so we also fall back to
-  // the standard API's `code` field and to any country code embedded in the
-  // display name.
-  function countryCodeFromPlace(place){
-    if(!place) return "";
-    const raw = (place.display_name || place.name || "").trim();
-    const trailing = raw.match(/(?:^|[,\s])([A-Z]{2})$/i);
-    if(trailing) return trailing[1].toUpperCase();
-    if(place.country_code) return String(place.country_code).toUpperCase();
-    if(place.code && /^[A-Za-z]{2}$/.test(String(place.code))) return String(place.code).toUpperCase();
-    if(place.admin_level === 0){
-      const name = (place.name || raw.split(",")[0] || "").trim().toLowerCase();
-      if(COUNTRY_CODE_BY_NAME[name]) return COUNTRY_CODE_BY_NAME[name];
+  function populateRegionSelect(){
+    REGIONS.slice(1).forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r.q;
+      opt.textContent = r.label;
+      el.regionSelect.appendChild(opt);
+    });
+    if(placeId){
+      const opt = document.createElement("option");
+      opt.value = "__url__";
+      opt.textContent = "{ from link }";
+      opt.selected = true;
+      el.regionSelect.insertBefore(opt, el.regionSelect.firstChild.nextSibling);
     }
-    return "";
   }
 
-  // Many perfectly legitimate iNaturalist places (islands, parks, EEZs,
-  // etc.) are community-curated and therefore have no country_code of their
-  // own. Walk their parent chain until we reach the actual country. This is
-  // only for presentation (the selected place ID remains unchanged).
-  async function countryCodeForPlace(place){
-    const direct = countryCodeFromPlace(place);
-    if(direct) return direct;
-    if(!place || !place.id) return "";
-
-    const cacheKey = String(place.id);
-    if(countryCodeCache.has(cacheKey)) return countryCodeCache.get(cacheKey);
-    if(countryCodePending.has(cacheKey)) return countryCodePending.get(cacheKey);
-
-    const pending = (async () => {
-      try{
-        let cur = place;
-        const seen = new Set();
-        for(let depth = 0; depth < 12 && cur; depth++){
-          const directCur = countryCodeFromPlace(cur);
-          if(directCur && Number(cur.admin_level) === 0){
-            countryCodeCache.set(cacheKey, directCur);
-            return directCur;
-          }
-          const parentId = cur.parent_id;
-          if(!parentId || seen.has(String(parentId))) break;
-          seen.add(String(parentId));
-          const data = await fetchJSON(`${API}/places/${parentId}`);
-          cur = data.results && data.results[0];
-        }
-      }catch(e){
-        // A missing presentation-only flag must never prevent the place from
-        // being selectable.
-      }
-      countryCodeCache.set(cacheKey, "");
-      return "";
-    })();
-
-    countryCodePending.set(cacheKey, pending);
-    try{ return await pending; }
-    finally{ countryCodePending.delete(cacheKey); }
-  }
-
-  function setRegionFlag(place){
-    const code = place ? countryCodeFromPlace(place) : "";
-    const flag = flagEmojiFromCountryCode(code);
-    el.regionFlag.textContent = flag;
-    el.regionInput.classList.toggle("has-flag", !!flag);
-    sizeRegionInput();
-  }
-
-  // Grows/shrinks the region box to fit whatever place name is in it (long
-  // names like "Democratic Republic of the Congo" would otherwise get
-  // clipped by the old fixed width), clamped between the CSS min/max width.
-  let regionMeasureCanvas;
-  function sizeRegionInput(){
-    const input = el.regionInput;
-    const text = input.value || input.placeholder || "";
-    if(!regionMeasureCanvas) regionMeasureCanvas = document.createElement("canvas");
-    const ctx = regionMeasureCanvas.getContext("2d");
-    const cs = getComputedStyle(input);
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    const textWidth = ctx.measureText(text).width;
-    const paddingH = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-    const borderH = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
-    const flagSpace = input.classList.contains("has-flag") ? 20 : 0;
-    const minWidth = parseFloat(cs.minWidth) || 90;
-    const maxWidth = parseFloat(cs.maxWidth) || 320;
-    const width = Math.min(maxWidth, Math.max(minWidth, Math.ceil(textWidth + paddingH + borderH + flagSpace + 6)));
-    input.style.width = width + "px";
-  }
-
-  function setRegionError(message){
-    el.regionInput.classList.toggle("is-error", !!message);
-    el.regionStatus.classList.toggle("is-error", !!message);
-    el.regionStatus.textContent = message || "";
-  }
-
-  // If the region field is showing an error (e.g. "Locality not found.")
-  // from a typed edit that never resolved, it just keeps showing that error
-  // — nothing else clears it. Call this when a new round loads so the field
-  // snaps back to whatever region is actually in effect instead of leaving
-  // stale error text/typed input sitting there indefinitely.
-  function resetRegionInputToCommitted(){
-    closeRegionSuggest();
-    if(!el.regionInput.classList.contains("is-error")) return;
-    el.regionInput.value = committedRegionValue;
-    setRegionFlag(committedRegionPlace);
-    setRegionError("");
-  }
-
-  function initializeRegionInput(){
-    if(!placeId){
-      sizeRegionInput();
-      return;
-    }
-
-    // We only have the id from the URL, not its name — look it up so the
-    // field shows something readable (and its flag) instead of sitting blank.
-    el.regionInput.placeholder = "Loading region…";
-    sizeRegionInput();
-    fetchJSON(`${API}/places/${placeId}`).then(data => {
-      const place = data.results && data.results[0];
-      if(place && isAllowedRegionPlace(place)){
-        el.regionInput.value = place.display_name || place.name || "";
-        setRegionFlag(place); // also resizes
-        committedRegionValue = el.regionInput.value;
-        committedRegionPlace = place;
-      }else{
-        // Do not allow an old URL containing a lower-level place to bypass
-        // the new country/first-level-admin restriction.
-        placeId = null;
-        const url = new URL(location.href);
-        url.searchParams.delete("place_id");
-        history.replaceState(null, "", url);
-      }
-      el.regionInput.placeholder = "Everywhere";
-      sizeRegionInput();
-    }).catch(() => { el.regionInput.placeholder = "Everywhere"; sizeRegionInput(); });
-  }
-
-  // Scores how well a place matches a typed query, lowest = best. Prefers
-  // an exact name/first-segment match, then a prefix match, before falling
-  // back to a plain substring match — this is what lets "sydney" prefer
-  // the actual city of Sydney over an unrelated place that merely contains
-  // "sydney" somewhere in a longer display_name.
-  function placeMatchScore(query, place){
-    const q = query.trim().toLowerCase();
-    const name = (place.name || "").toLowerCase();
-    const display = (place.display_name || "").toLowerCase();
-    const firstSeg = display.split(",")[0].trim();
-    if(name === q || firstSeg === q) return 0;
-    if(name.startsWith(q) || firstSeg.startsWith(q)) return 1;
-    if(display.startsWith(q)) return 2;
-    if(name.includes(q) || display.includes(q)) return 3;
-    return 4;
-  }
-
-  // Among equally-good name matches (e.g. "Sydney, NSW, AU" vs "Sydney,
-  // NS, CA"), iNaturalist's own autocomplete ranking doesn't reliably put
-  // the place most people mean first. Break ties by place area — bigger,
-  // more prominent places (a metro area vs. a small town sharing the same
-  // name) are far more likely to be what was intended.
-  function rankPlaceResults(query, results){
-    return results
-      .filter(isAllowedRegionPlace)
-      .map((p, i) => ({ p, score: placeMatchScore(query, p), i, area: Number(p.bbox_area) || 0 }))
-      .sort((a, b) => a.score - b.score || b.area - a.area || a.i - b.i)
-      .map(r => r.p);
-  }
-
-  async function resolvePlace(name){
+  async function resolvePlaceId(name){
     if(placeIdCache[name]) return placeIdCache[name];
-    const qs = new URLSearchParams({ q: name, per_page: "20" });
+    const qs = new URLSearchParams({ q: name, per_page: "8" });
     const data = await fetchJSON(`${API}/places/autocomplete?${qs.toString()}`);
     const results = data.results || [];
     if(!results.length) return null;
-    const place = rankPlaceResults(name, results)[0];
-    placeIdCache[name] = place;
-    return place;
-  }
-
-  // ---------- region suggestion dropdown ----------
-  // Lets the person pick from real candidate places while typing, instead
-  // of silently auto-resolving to our best guess on blur (which is how an
-  // ambiguous query like "sydney" could quietly land on the wrong Sydney).
-  let regionSuggestToken = 0;
-  let regionSuggestDebounceId = null;
-  let regionSuggestResults = [];
-  let regionSuggestActiveIdx = -1;
-
-  function closeRegionSuggest(){
-    el.regionSuggest.classList.remove("show");
-    el.regionSuggest.innerHTML = "";
-    regionSuggestResults = [];
-    regionSuggestActiveIdx = -1;
-  }
-
-  function highlightRegionSuggest(idx){
-    regionSuggestActiveIdx = idx;
-    Array.from(el.regionSuggest.children).forEach((li, i) => {
-      li.classList.toggle("is-active", i === idx);
-    });
-  }
-
-  function renderRegionSuggest(results){
-    regionSuggestResults = results;
-    if(!results.length){
-      closeRegionSuggest();
-      return;
-    }
-    el.regionSuggest.innerHTML = results.map((p, i) => {
-      const code = countryCodeFromPlace(p);
-      const flag = flagEmojiFromCountryCode(code);
-      const label = escapeHtml(p.display_name || p.name || "");
-      return `<li class="region-suggest-item" data-idx="${i}" role="option">${flag ? `<span class="rs-flag">${flag}</span>` : ""}<span class="rs-label">${label}</span></li>`;
-    }).join("");
-    el.regionSuggest.classList.add("show");
-    highlightRegionSuggest(0);
-
-    // Fill in inherited country flags for community-curated places after the
-    // initial dropdown has appeared. The dropdown remains responsive while
-    // the parent lookups complete.
-    results.forEach((p, i) => {
-      if(countryCodeFromPlace(p)) return;
-      countryCodeForPlace(p).then(code => {
-        if(!code || regionSuggestResults[i] !== p) return;
-        const li = el.regionSuggest.children[i];
-        if(!li) return;
-        const flag = flagEmojiFromCountryCode(code);
-        if(!flag || li.querySelector(".rs-flag")) return;
-        const span = document.createElement("span");
-        span.className = "rs-flag";
-        span.textContent = flag;
-        li.insertBefore(span, li.firstChild);
-      });
-    });
-  }
-
-  async function fetchRegionSuggest(q){
-    const myToken = ++regionSuggestToken;
-    try{
-      const qs = new URLSearchParams({ q, per_page: "20" });
-      const data = await fetchJSON(`${API}/places/autocomplete?${qs.toString()}`);
-      if(myToken !== regionSuggestToken) return; // a newer keystroke has since fired
-      renderRegionSuggest(rankPlaceResults(q, data.results || []).slice(0, 8));
-    }catch(e){
-      if(myToken !== regionSuggestToken) return;
-      closeRegionSuggest();
-    }
-  }
-
-  function selectRegionSuggest(place){
-    placeId = place.id;
-    el.regionInput.value = place.display_name || place.name || "";
-    setRegionFlag(place); // also resizes
-    setRegionError("");
-    committedRegionValue = el.regionInput.value;
-    committedRegionPlace = place;
-    closeRegionSuggest();
-
-    const url = new URL(location.href);
-    url.searchParams.set("place_id", placeId);
-    history.replaceState(null, "", url);
-
-    loadNewRound();
+    const exact = results.find(p => (p.name || "").toLowerCase() === name.toLowerCase());
+    const id = (exact || results[0]).id;
+    placeIdCache[name] = id;
+    return id;
   }
 
   async function onRegionChange(){
-    const val = el.regionInput.value.trim();
-    closeRegionSuggest();
-    if(val === committedRegionValue) return; // already applied (e.g. via a dropdown pick) or unchanged
-    el.regionInput.disabled = true;
-    setRegionError("");
+    const val = el.regionSelect.value;
+    if(val === "__url__") return;
+    el.regionSelect.disabled = true;
+    el.regionStatus.textContent = "";
     if(!val){
       placeId = null;
-      setRegionFlag(null);
-      committedRegionValue = "";
-      committedRegionPlace = null;
     }else{
       el.regionStatus.textContent = "finding region…";
       try{
-        const place = await resolvePlace(val);
-        if(!place){
-          setRegionError("Country or first-level region not found.");
-          setRegionFlag(null);
-          el.regionInput.disabled = false;
-          el.regionInput.focus();
-          return; // leave the typed text and the previous region untouched
+        const id = await resolvePlaceId(val);
+        if(!id){
+          showError(`Couldn't find "${val}" as an iNaturalist place — showing everywhere instead.`);
+          placeId = null;
+          el.regionSelect.value = "";
+        }else{
+          placeId = id;
         }
-        placeId = place.id;
-        el.regionInput.value = place.display_name || place.name || val;
-        setRegionFlag(place); // also resizes
-        el.regionStatus.textContent = "";
-        committedRegionValue = el.regionInput.value;
-        committedRegionPlace = place;
       }catch(e){
         console.error(e);
-        setRegionError("Couldn't reach iNaturalist to resolve that region.");
-        setRegionFlag(null);
-        el.regionInput.disabled = false;
-        return; // same — don't clear a perfectly good previous region on a network blip
+        showError("Couldn't reach iNaturalist to resolve that region.");
+        placeId = null;
+        el.regionSelect.value = "";
       }
     }
-    el.regionInput.disabled = false;
+    el.regionStatus.textContent = "";
+    el.regionSelect.disabled = false;
 
     const url = new URL(location.href);
     if(placeId) url.searchParams.set("place_id", placeId); else url.searchParams.delete("place_id");
@@ -4888,22 +4151,6 @@
     if(!img || img.alt !== "Mystery bird observation" || !currentOriginalPhotoUrl) return;
     window.open(currentOriginalPhotoUrl, "_blank", "noopener");
   });
-  el.creditText.addEventListener("click", e => {
-    const tz = e.target.closest(".observation-timezone");
-    if(!tz) return;
-    tz.classList.add("is-visible");
-    tz.setAttribute("aria-label", "Observation timezone revealed");
-    tz.removeAttribute("title");
-  });
-
-  function revealObservationTimezone(){
-    el.creditText.querySelectorAll(".observation-timezone").forEach(tz => {
-      tz.classList.add("is-visible");
-      tz.setAttribute("aria-label", "Observation timezone");
-      tz.removeAttribute("title");
-    });
-  }
-
   el.guessBtn.addEventListener("click", submitGuess);
   el.guessInput.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); submitGuess(); } });
   el.advanceBtn.addEventListener("click", () => {
@@ -4911,72 +4158,12 @@
     if(state.finished){ loadNewRound(); }
     else{ finishRound(false); }
   });
-  el.backBtn.addEventListener("click", restorePreviousRound);
   el.pickBtn.addEventListener("click", startPickMe);
   el.soundBtn.addEventListener("click", toggleBirdSound);
   el.pickCloseBtn.addEventListener("click", closePickOverlay);
   el.pickRevealBtn.addEventListener("click", () => { closePickOverlay(); finishRound(false); });
   el.gamemodeSelect.addEventListener("change", onGamemodeChange);
-  el.regionInput.addEventListener("change", onRegionChange);
-  el.regionInput.addEventListener("input", () => {
-    sizeRegionInput();
-    const val = el.regionInput.value.trim();
-    if(regionSuggestDebounceId) clearTimeout(regionSuggestDebounceId);
-    if(val.length < 2 || val === committedRegionValue){
-      closeRegionSuggest();
-      return;
-    }
-    regionSuggestDebounceId = setTimeout(() => fetchRegionSuggest(val), 250);
-  });
-  el.regionInput.addEventListener("keydown", e => {
-    if(el.regionSuggest.classList.contains("show")){
-      if(e.key === "ArrowDown"){
-        e.preventDefault();
-        highlightRegionSuggest(Math.min(regionSuggestActiveIdx + 1, regionSuggestResults.length - 1));
-        return;
-      }
-      if(e.key === "ArrowUp"){
-        e.preventDefault();
-        highlightRegionSuggest(Math.max(regionSuggestActiveIdx - 1, 0));
-        return;
-      }
-      if(e.key === "Escape"){
-        closeRegionSuggest();
-        return;
-      }
-      if(e.key === "Enter" && regionSuggestActiveIdx >= 0 && regionSuggestResults[regionSuggestActiveIdx]){
-        e.preventDefault();
-        selectRegionSuggest(regionSuggestResults[regionSuggestActiveIdx]);
-        return;
-      }
-    }
-    if(e.key === "Enter") el.regionInput.blur(); // triggers the change handler above
-  });
-  // mousedown (not click) fires before the input's blur, and clicking a
-  // non-focusable <li> doesn't itself move focus off the input — so this
-  // fires, and closes/commits, without the blur-driven onRegionChange path
-  // racing it.
-  el.regionSuggest.addEventListener("mousedown", e => {
-    const li = e.target.closest(".region-suggest-item");
-    if(!li) return;
-    e.preventDefault();
-    const place = regionSuggestResults[Number(li.dataset.idx)];
-    if(place) selectRegionSuggest(place);
-  });
-  el.regionInput.addEventListener("blur", () => {
-    // Delayed so a suggestion click's mousedown (which fires first) has
-    // already handled its own close; this is just the catch-all for
-    // clicking/tabbing away without picking anything.
-    setTimeout(closeRegionSuggest, 150);
-  });
-  sizeRegionInput();
-  el.raritySlider.addEventListener("dblclick", () => {
-    rarity = 50;
-    el.raritySlider.value = "50";
-    el.rarityNumber.value = "50";
-    updateRarityLabel();
-  });
-
+  el.regionSelect.addEventListener("change", onRegionChange);
   el.raritySlider.addEventListener("input", () => {
     let value = Number(el.raritySlider.value);
 
@@ -5030,9 +4217,8 @@
   }
 
   populateGamemodeSelect();
-  initializeRegionInput();
+  populateRegionSelect();
   el.rarityNumber.value = String(rarity);
-  updateBackButton();
   updateRarityLabel();
   loadNewRound();
 })();
