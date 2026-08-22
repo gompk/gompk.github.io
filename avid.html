@@ -2593,6 +2593,62 @@
     return `rgba(${r},${g},${b},${alpha})`;
   }
 
+  // Hex <-> HSL round trip, used to derive a punchy saturated core tone and
+  // a complementary contour color from whatever accent the active theme
+  // happens to use, regardless of how muted that theme's own accent is.
+  function hexToHsl(hex){
+    hex = (hex || "").trim().replace("#", "");
+    if(hex.length === 3) hex = hex.split("").map(c => c + c).join("");
+    if(hex.length !== 6) return [0, 0, 0];
+    const num = parseInt(hex, 16);
+    let r = ((num >> 16) & 255) / 255, g = ((num >> 8) & 255) / 255, b = (num & 255) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    const d = max - min;
+    if(d !== 0){
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch(max){
+        case r: h = ((g - b) / d) % 6; break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4;
+      }
+      h *= 60;
+      if(h < 0) h += 360;
+    }
+    return [h, s * 100, l * 100];
+  }
+
+  function hslToHex(h, s, l){
+    s /= 100; l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    let r, g, b;
+    if(h < 60) [r, g, b] = [c, x, 0];
+    else if(h < 120) [r, g, b] = [x, c, 0];
+    else if(h < 180) [r, g, b] = [0, c, x];
+    else if(h < 240) [r, g, b] = [0, x, c];
+    else if(h < 300) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    const toHex = (v) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+    return "#" + toHex(r) + toHex(g) + toHex(b);
+  }
+
+  // Boosts a hex color to a given saturation/lightness, keeping its hue.
+  function saturateHex(hex, satPct, lightPct){
+    const [h, , l] = hexToHsl(hex);
+    return hslToHex(h, satPct, lightPct != null ? lightPct : l);
+  }
+
+  // Rotates a hex color's hue 180° and forces it to a vivid saturation/
+  // lightness, for a contour stroke that reads as a clear complementary
+  // color rather than just a darker or lighter version of the fill.
+  function complementaryHex(hex, satPct, lightPct){
+    const [h] = hexToHsl(hex);
+    return hslToHex((h + 180) % 360, satPct, lightPct);
+  }
+
   async function fetchJSON(url, opts){
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 12000);
@@ -4036,13 +4092,24 @@
   // continuous client-side density surface. We sample observations in random
   // order rather than taking the first records by iNat ID: ID order is not
   // geographically representative and can make widespread taxa look
-  // artificially absent from large parts of their range. The sample is
-  // capped at 5,000 observations, with requests fetched in small batches.
-  async function fetchTaxonRangePoints(taxonId){
+  // artificially absent from large parts of their range.
+  //
+  // The sample is capped at 1,600 observations (down from a former 5,000) —
+  // that's plenty of density for a blurred heat surface to read as a range,
+  // and it roughly triples the effective concurrency: with only 8 pages
+  // total, everything after the first page now fits in a single batch of
+  // parallel requests instead of five sequential batches.
+  //
+  // `onBatch(newPoints)` is optional and fires after the first page and
+  // after the remaining batch resolve, so a caller can start painting the
+  // heat layer as soon as the first ~200 points are in rather than waiting
+  // for the whole sample — this is what actually fixes the "shading takes
+  // forever to appear" feeling, independent of the total fetch time.
+  async function fetchTaxonRangePoints(taxonId, onBatch){
     if(taxonPointsCache[taxonId]) return taxonPointsCache[taxonId];
     const promise = (async () => {
       const perPage = 200;
-      const maxPages = 25;
+      const maxPages = 8;
       const pageQs = (page) => new URLSearchParams({
         taxon_id: String(taxonId),
         quality_grade: "research",
@@ -4053,10 +4120,12 @@
       });
       const points = [];
       const collect = (data) => {
+        const added = [];
         (data.results || []).forEach(o => {
           const c = getObsLatLng(o);
-          if(c) points.push(c);
+          if(c){ points.push(c); added.push(c); }
         });
+        if(added.length && onBatch) onBatch(added);
       };
       try{
         const firstPage = await fetchJSON(`${API}/observations?${pageQs(1).toString()}`);
@@ -4064,15 +4133,12 @@
         const totalResults = firstPage.total_results || 0;
         const pagesAvailable = Math.min(maxPages, Math.ceil(totalResults / perPage));
         if(pagesAvailable > 1){
-          // Fetch in small batches rather than firing all 25 requests at once.
+          // All remaining pages (at most 7) fetched in one parallel round.
           const pages = Array.from({ length: pagesAvailable - 1 }, (_, i) => i + 2);
-          for(let i = 0; i < pages.length; i += 5){
-            const batch = pages.slice(i, i + 5);
-            const rest = await Promise.all(
-              batch.map(page => fetchJSON(`${API}/observations?${pageQs(page).toString()}`).catch(() => null))
-            );
-            rest.forEach(data => { if(data) collect(data); });
-          }
+          const rest = await Promise.all(
+            pages.map(page => fetchJSON(`${API}/observations?${pageQs(page).toString()}`).catch(() => null))
+          );
+          rest.forEach(data => { if(data) collect(data); });
         }
       }catch(e){
         console.error(e);
@@ -4097,16 +4163,6 @@
     const cs = getComputedStyle(document.documentElement);
     const accent = (cs.getPropertyValue("--color-accent") || "#3454d1").trim();
     const accentSoft = (cs.getPropertyValue("--color-accent-soft") || "#b9c4f2").trim();
-    // The heat shading always uses the theme's accent color, so the pin
-    // fill comes from --color-map-pin — a per-theme hue picked to sit
-    // opposite that theme's accent (warm vs. cool) so it reads as a
-    // distinct marker rather than blending into the heat blob. The
-    // basemap tiles are always the light CARTO style regardless of the
-    // app's light/dark appearance, so a darkened version of the same
-    // fill color is a reliably high-contrast outline in every theme.
-    const pinFill = (cs.getPropertyValue("--color-map-pin") || "#f0c419").trim();
-    const pinStroke = darkenHex(pinFill, 0.45);
-    const pinHot = darkenHex(pinFill, 0.7);
 
     const map = L.map(mapEl, {
       zoomControl: false,
@@ -4116,22 +4172,61 @@
     });
     revealMapInstance = map;
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; OpenStreetMap, &copy; CARTO',
       maxZoom: 18,
       subdomains: "abcd",
     }).addTo(map);
 
+    // Labels (state lines, city/place names) live in their own pane, given a
+    // z-index above Leaflet's default overlayPane (400) — which is where the
+    // heat layer's canvas renders. That guarantees labels stay legible on top
+    // of the shading no matter how dense or slow-to-build the heat data is,
+    // instead of getting buried under it like they were with the combined
+    // light_all tiles.
+    map.createPane("mapLabelsPane");
+    map.getPane("mapLabelsPane").style.zIndex = 650;
+    map.getPane("mapLabelsPane").style.pointerEvents = "none";
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png", {
+      maxZoom: 18,
+      subdomains: "abcd",
+      pane: "mapLabelsPane",
+    }).addTo(map);
+
+    // The pin sits in its own pane above the labels pane (650), so it always
+    // draws over state lines/city names — unlike the shading, which stays
+    // in the default overlayPane (400), below the labels.
+    map.createPane("obsPinPane");
+    map.getPane("obsPinPane").style.zIndex = 660;
+
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
     if(obsCoords){
-      L.circleMarker(obsCoords, {
-        radius: 7,
-        color: pinStroke,
-        weight: 2,
-        fillColor: pinFill,
-        fillOpacity: 0.95,
-      }).addTo(map);
+      // Deliberately NOT theme-colored: a plain white dot with a black
+      // outline reads clearly against any basemap or app theme, and stays
+      // visually consistent regardless of which accent color is active.
+      const obsPinIcon = L.divIcon({
+        className: "obs-pin-icon",
+        html: `<div style="
+            width:20px; height:20px; border-radius:50%;
+            background:#ffffff; border:2px solid #111111;
+            box-shadow:0 1px 3px rgba(0,0,0,0.4);
+            display:flex; align-items:center; justify-content:center;
+          ">
+            <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polygon fill="#111111" points="3,14 8,10.8 8,17.2"/>
+              <ellipse fill="#111111" cx="13" cy="14" rx="6" ry="4.5"/>
+              <circle fill="#111111" cx="18.5" cy="10" r="3.2"/>
+              <polygon fill="#111111" points="21.3,9.6 24,8.6 21.5,11.4"/>
+              <path fill="#ffffff" fill-opacity="0.55" d="M10 12.5 Q14 9 17 13.5 Q13 13 10 12.5 Z"/>
+              <circle fill="#ffffff" cx="19.6" cy="9.2" r="0.65"/>
+            </svg>
+          </div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+      L.marker(obsCoords, { icon: obsPinIcon, keyboard: false, pane: "obsPinPane" }).addTo(map);
       map.setView(obsCoords, 5);
     }else{
       map.setView([15, 10], 2);
@@ -4141,28 +4236,67 @@
     // Leaflet's initial size read can be stale — fix it up a beat later.
     setTimeout(() => { if(revealMapInstance === map) map.invalidateSize(); }, 80);
 
-    const points = await fetchTaxonRangePoints(taxonId);
+    // Fill runs desaturated at the outer edge of a cluster up to a vivid,
+    // fully-saturated core — regardless of how muted the theme's own
+    // accent is — plus a saturated complementary-hue contour ring right
+    // at the boundary between "some density" and "none", so each blob
+    // reads as a defined shape with an outline rather than a soft haze.
+    const edgeTone = saturateHex(accent, 35, 88);
+    const coreTone = saturateHex(accent, 92, 46);
+    const contourTone = complementaryHex(accent, 90, 52);
+    const heatOptions = {
+      radius: 11,
+      blur: 26,
+      maxZoom: 6,
+      minOpacity: 0.05,
+      // `max` sets the density value that counts as "fully saturated".
+      // Leaflet.heat's default (1.0) means a modest cluster of nearby
+      // points already reads as maximum intensity, which is what was
+      // flattening dense areas into one opaque blob. Raising it forces
+      // more points to accumulate before a cell tops out, so the shading
+      // stays gradated instead of clipping to a solid color early.
+      max: 3.5,
+      gradient: {
+        0.001: hexToRgba(contourTone, 0),
+        0.09: hexToRgba(contourTone, 0),
+        // Contour ring: a narrow spike right at the cluster's edge.
+        0.12: hexToRgba(contourTone, 0.75),
+        0.16: hexToRgba(contourTone, 0.1),
+        // Fill: desaturated just inside the ring, ramping up to a
+        // fully saturated core at the densest point.
+        0.22: hexToRgba(edgeTone, 0.16),
+        0.5: hexToRgba(accent, 0.34),
+        0.8: hexToRgba(coreTone, 0.5),
+        1: hexToRgba(coreTone, 0.65),
+      },
+    };
+
+    // Grows a single heat layer in place as batches of points arrive, rather
+    // than waiting for the entire (up to 8-page) sample before drawing
+    // anything. `setLatLngs` replaces the whole dataset in one redraw, so
+    // this fires at most twice — once for the first page, once for the
+    // rest — instead of once per point.
+    let heatLayer = null;
+    const seenPoints = [];
+    const paintBatch = (newPoints) => {
+      if(myToken !== revealMapToken || revealMapInstance !== map) return;
+      if(!newPoints.length || typeof L.heatLayer !== "function") return;
+      seenPoints.push(...newPoints);
+      if(!heatLayer){
+        heatLayer = L.heatLayer(seenPoints, heatOptions).addTo(map);
+      }else{
+        heatLayer.setLatLngs(seenPoints);
+      }
+    };
+
+    const points = await fetchTaxonRangePoints(taxonId, paintBatch);
     // Bail if a newer round/reveal superseded this fetch while it was in flight.
     if(myToken !== revealMapToken || revealMapInstance !== map) return;
-    if(points.length && typeof L.heatLayer === "function"){
-      L.heatLayer(points, {
-        radius: 15,
-        blur: 22,
-        maxZoom: 6,
-        minOpacity: 0.12,
-        // Bicolor gradient: sparse, low-density edges shade in the theme's
-        // cool accent, then shift hue — not just lighten/darken — toward
-        // the warm map-pin color as density climbs, so the densest cores
-        // read as a genuinely different color rather than a deeper tint
-        // of the same one.
-        gradient: {
-          0.15: hexToRgba(accentSoft, 0.30),
-          0.4: hexToRgba(accent, 0.55),
-          0.7: hexToRgba(pinFill, 0.75),
-          1: hexToRgba(pinHot, 0.9),
-        },
-      }).addTo(map);
-    }
+    // If this taxon's points were already cached from an earlier reveal,
+    // paintBatch never ran (the cached promise resolves without calling
+    // onBatch) — draw the full set now, all at once, since it's already
+    // in memory and there's nothing to stream.
+    if(!heatLayer) paintBatch(points);
   }
 
   function renderRevealDetails(state, solved){
