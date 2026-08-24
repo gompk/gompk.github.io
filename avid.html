@@ -25,10 +25,10 @@
      this block (see the [data-theme="..."] blocks below).
      ========================================================== */
   :root{
-    /* Default palette is "canopy" (see the [data-theme="canopy"]-shaped
-       block this now replaces — canopy's own block below was removed
-       since these ARE canopy's values). Every other palette, including
-       canopy's own dark-mode variant, lives in the theme blocks below. */
+    /* Default palette is "vireo" (see the [data-theme="vireo"]-shaped
+       block this now replaces — vireo's own block below was removed
+       since these ARE vireo's values). Every other palette, including
+       vireo's own dark-mode variant, lives in the theme blocks below. */
 
     /* --- surfaces & backgrounds --- */
     --color-bg-page: #f8f8f8;          /* page background */
@@ -37,6 +37,13 @@
     --color-surface-alt: #f2f2f2;      /* alternate card background (image fallback) */
     --color-surface-translucent: rgba(255,255,255,0.88); /* glass buttons floating over photos */
     --color-border: #979797;           /* default hairline border */
+
+    /* --- layout surfaces ---
+       Main content surfaces are white in light mode and inherit each theme's
+       page color in dark mode. Form/image fields use the theme's pale
+       secondary background instead. */
+    --color-content-bg: #ffffff;
+    --color-input-bg: var(--color-bg-page-alt);
 
     /* --- text --- */
     --color-text-primary: #222222;     /* main body / heading text */
@@ -114,9 +121,9 @@
   }
 
   /* ---------- theme palettes ----------
-     Eight selectable hues (meadow, canopy [default/:root], field-notes,
-     tide, blossom, dune, ink, slate), each defined for BOTH light and
-     dark appearance. Appearance is a separate axis from hue: [data-appearance
+     Eight selectable hues (bluebird, vireo [default/:root], thrasher,
+     kingfisher, galah, kestrel, grackle, heron), each defined for BOTH
+     light and dark appearance. Appearance is a separate axis from hue: [data-appearance
      ="dark"] toggles independently of [data-theme="..."], so dark mode
      adapts whichever of the eight palettes is active rather than being
      hardwired into one or two specific swatches.
@@ -124,8 +131,8 @@
      signal (order/family/genus/species) always means the same thing
      regardless of theme or appearance. */
 
-  /* ===== meadow (light) ===== */
-  [data-theme="meadow"]{
+  /* ===== bluebird (light) ===== */
+  [data-theme="bluebird"]{
     --color-bg-page: #ffffff;
     --color-bg-page-alt: #edeff8;
     --color-surface: #ffffff;
@@ -157,8 +164,8 @@
     --color-map-pin: #f4923b;
   }
 
-  /* ===== meadow (dark) ===== */
-  [data-appearance="dark"][data-theme="meadow"]{
+  /* ===== bluebird (dark) ===== */
+  [data-appearance="dark"][data-theme="bluebird"]{
     --color-bg-page: #14151d;
     --color-bg-page-alt: #1c1e29;
     --color-surface: #1c1e29;
@@ -194,8 +201,10 @@
     --color-advance-bg-hover: #4c5280;
   }
 
-  /* ===== canopy (light) — this is also :root's default palette ===== */
+  /* ===== vireo (light) — this is also :root's default palette ===== */
   [data-appearance="dark"]{
+    --color-content-bg: var(--color-bg-page);
+    --color-input-bg: var(--color-bg-page-alt);
     --color-bg-page: #15170f;
     --color-bg-page-alt: #202417;
     --color-surface: #1c2016;
@@ -231,14 +240,15 @@
     --color-advance-bg-hover: #546336;
   }
 
-  /* ===== field-notes (light) ===== */
-  [data-theme="field-notes"]{
-    --color-bg-page: #f6efe0;
-    --color-bg-page-alt: #eee1c8;
-    --color-surface: #fbf6ea;
-    --color-surface-alt: #f0e5cd;
-    --color-surface-translucent: rgba(251,246,234,0.88);
-    --color-border: #c1a672;
+  /* ===== thrasher (light) ===== */
+  [data-theme="thrasher"]{
+    --color-bg-page: #f7f5f1;
+    --color-input-bg: #f1dfcf;
+    --color-bg-page-alt: #ece7e0;
+    --color-surface: #fbfaf8;
+    --color-surface-alt: #f1ede7;
+    --color-surface-translucent: rgba(251,250,248,0.88);
+    --color-border: #b9a888;
     --color-text-primary: #3a2a18;
     --color-text-secondary: #5c4527;
     --color-text-muted: #8a7455;
@@ -264,9 +274,10 @@
     --color-map-pin: #2ea8c9;
   }
 
-  /* ===== field-notes (dark) ===== */
-  [data-appearance="dark"][data-theme="field-notes"]{
+  /* ===== thrasher (dark) ===== */
+  [data-appearance="dark"][data-theme="thrasher"]{
     --color-bg-page: #17120f;
+    --color-input-bg: #342820;
     --color-bg-page-alt: #241c17;
     --color-surface: #201a16;
     --color-surface-alt: #2d251f;
@@ -301,14 +312,14 @@
     --color-advance-bg-hover: #634836;
   }
 
-  /* ===== tide (light) ===== */
-  [data-theme="tide"]{
-    --color-bg-page: #eef7f9;
-    --color-bg-page-alt: #dbeef2;
+  /* ===== kingfisher (light) ===== */
+  [data-theme="kingfisher"]{
+    --color-bg-page: #f5f8f9;
+    --color-bg-page-alt: #e8eef0;
     --color-surface: #ffffff;
-    --color-surface-alt: #e7f3f5;
+    --color-surface-alt: #edf2f3;
     --color-surface-translucent: rgba(255,255,255,0.88);
-    --color-border: #88bfc9;
+    --color-border: #9db3b8;
     --color-text-primary: #0f3d42;
     --color-text-secondary: #1f5b62;
     --color-text-muted: #5c8a90;
@@ -334,8 +345,8 @@
     --color-map-pin: #f2703c;
   }
 
-  /* ===== tide (dark) ===== */
-  [data-appearance="dark"][data-theme="tide"]{
+  /* ===== kingfisher (dark) ===== */
+  [data-appearance="dark"][data-theme="kingfisher"]{
     --color-bg-page: #0f1617;
     --color-bg-page-alt: #172224;
     --color-surface: #161e20;
@@ -371,14 +382,15 @@
     --color-advance-bg-hover: #365c63;
   }
 
-  /* ===== blossom (light) ===== */
-  [data-theme="blossom"]{
-    --color-bg-page: #fdf3f6;
-    --color-bg-page-alt: #f9e3ea;
+  /* ===== galah (light) ===== */
+  [data-theme="galah"]{
+    --color-bg-page: #f8f6f7;
+    --color-input-bg: #f3dfe7;
+    --color-bg-page-alt: #ece7e9;
     --color-surface: #ffffff;
-    --color-surface-alt: #fcebf0;
+    --color-surface-alt: #f3eef0;
     --color-surface-translucent: rgba(255,255,255,0.88);
-    --color-border: #d68ba2;
+    --color-border: #c9a8b5;
     --color-text-primary: #4a1f2e;
     --color-text-secondary: #6b3247;
     --color-text-muted: #9c6377;
@@ -404,9 +416,10 @@
     --color-map-pin: #23a67a;
   }
 
-  /* ===== blossom (dark) ===== */
-  [data-appearance="dark"][data-theme="blossom"]{
+  /* ===== galah (dark) ===== */
+  [data-appearance="dark"][data-theme="galah"]{
     --color-bg-page: #170f12;
+    --color-input-bg: #33252b;
     --color-bg-page-alt: #24171b;
     --color-surface: #201619;
     --color-surface-alt: #2d1f24;
@@ -441,23 +454,24 @@
     --color-advance-bg-hover: #633646;
   }
 
-  /* ===== dune (light) ===== */
-  [data-theme="dune"]{
-    --color-bg-page: #faf3e7;
-    --color-bg-page-alt: #f0e2c9;
-    --color-surface: #fffaf0;
-    --color-surface-alt: #f5e9d3;
-    --color-surface-translucent: rgba(255,250,240,0.88);
-    --color-border: #c9ad70;
-    --color-text-primary: #4a3420;
-    --color-text-secondary: #6b4d2e;
-    --color-text-muted: #9c7f57;
-    --color-text-faint: #b79c73;
-    --color-text-placeholder: #c4ab80;
+  /* ===== kestrel (light) ===== */
+  [data-theme="kestrel"]{
+    --color-bg-page: #f6f6f0;
+    --color-input-bg: #eee9d3;
+    --color-bg-page-alt: #e9e9dd;
+    --color-surface: #fdfdf8;
+    --color-surface-alt: #f0f0e4;
+    --color-surface-translucent: rgba(253,253,248,0.88);
+    --color-border: #b6ae86;
+    --color-text-primary: #3d3620;
+    --color-text-secondary: #5e5530;
+    --color-text-muted: #8f8558;
+    --color-text-faint: #ad9f74;
+    --color-text-placeholder: #b8aa7d;
     --color-text-inverse: #fffaf0;
-    --color-accent: #c4732f;
-    --color-accent-hover: #d98842;
-    --color-accent-soft: #f0d3ac;
+    --color-accent: #a67c1f;
+    --color-accent-hover: #c2953a;
+    --color-accent-soft: #e8d9ab;
     --color-danger: #a3392f;
     --color-danger-dim: #6e251f;
     --color-danger-bg: rgba(163,57,47,0.08);
@@ -467,16 +481,17 @@
     --color-scrim-strong: rgba(20,12,5,0.85);
     --color-label-badge-bg: rgba(32,20,8,0.72);
     --color-shadow: rgba(0,0,0,0.45);
-    --color-bg-glow: rgba(196,115,47,0.08);
-    --color-bg-texture: rgba(196,115,47,0.04);
-    --color-advance-bg: #4a3420;
-    --color-advance-bg-hover: #5f452b;
+    --color-bg-glow: rgba(166,124,31,0.08);
+    --color-bg-texture: rgba(166,124,31,0.04);
+    --color-advance-bg: #3d3620;
+    --color-advance-bg-hover: #524a2b;
     --color-map-pin: #3169c9;
   }
 
-  /* ===== dune (dark) ===== */
-  [data-appearance="dark"][data-theme="dune"]{
+  /* ===== kestrel (dark) ===== */
+  [data-appearance="dark"][data-theme="kestrel"]{
     --color-bg-page: #17130f;
+    --color-input-bg: #332e20;
     --color-bg-page-alt: #241d17;
     --color-surface: #201a16;
     --color-surface-alt: #2d261f;
@@ -489,9 +504,9 @@
     --color-text-faint: #8a7360;
     --color-text-placeholder: #786454;
     --color-text-inverse: #ffffff;
-    --color-accent: #dcb391;
-    --color-accent-hover: #e7cbb4;
-    --color-accent-soft: #463323;
+    --color-accent: #cf9d3e;
+    --color-accent-hover: #dfb662;
+    --color-accent-soft: #453a1d;
     --color-danger: #db8a82;
     --color-danger-dim: #eabcb8;
     --color-danger-bg: rgba(219,138,130,0.14);
@@ -505,14 +520,14 @@
     --color-scrim-strong: rgba(0,0,0,0.85);
     --color-label-badge-bg: rgba(0,0,0,0.6);
     --color-shadow: rgba(0,0,0,0.8);
-    --color-bg-glow: rgba(220,179,145,0.1);
-    --color-bg-texture: rgba(220,179,145,0.04);
+    --color-bg-glow: rgba(207,157,62,0.1);
+    --color-bg-texture: rgba(207,157,62,0.04);
     --color-advance-bg: #4e3a2a;
     --color-advance-bg-hover: #634a36;
   }
 
-  /* ===== ink (light) ===== */
-  [data-theme="ink"]{
+  /* ===== grackle (light) ===== */
+  [data-theme="grackle"]{
     --color-bg-page: #f8f7fb;
     --color-bg-page-alt: #ece9f3;
     --color-surface: #ffffff;
@@ -544,8 +559,8 @@
     --color-map-pin: #f0b429;
   }
 
-  /* ===== ink (dark) ===== */
-  [data-appearance="dark"][data-theme="ink"]{
+  /* ===== grackle (dark) ===== */
+  [data-appearance="dark"][data-theme="grackle"]{
     --color-bg-page: #0b0b0d;
     --color-bg-page-alt: #17171b;
     --color-surface: #131316;
@@ -581,8 +596,8 @@
     --color-advance-bg-hover: #26262c;
   }
 
-  /* ===== slate (light) ===== */
-  [data-theme="slate"]{
+  /* ===== heron (light) ===== */
+  [data-theme="heron"]{
     --color-bg-page: #f5f6f7;
     --color-bg-page-alt: #e8ebed;
     --color-surface: #ffffff;
@@ -614,8 +629,8 @@
     --color-map-pin: #e8952f;
   }
 
-  /* ===== slate (dark) ===== */
-  [data-appearance="dark"][data-theme="slate"]{
+  /* ===== heron (dark) ===== */
+  [data-appearance="dark"][data-theme="heron"]{
     --color-bg-page: #101314;
     --color-bg-page-alt: #191d1f;
     --color-surface: #16191b;
@@ -677,8 +692,10 @@
     margin-left: 60vw;
     width: 40vw;
     max-width: none;
+    min-height: 100vh;
     padding: 14px 20px 32px;
     box-sizing: border-box;
+    background: var(--color-content-bg);
   }
 
   /* ---------- header bar ---------- */
@@ -751,6 +768,7 @@
 
   /* ---------- photo card ---------- */
   .photo-card{
+    background: var(--color-input-bg);
     position: relative;
     overflow: hidden;
     height: 100%;
@@ -779,7 +797,7 @@
   .photo-frame{
     position: absolute;
     inset: 0;
-    background: var(--color-bg-page-alt);
+    background: var(--color-input-bg);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -898,6 +916,7 @@
 
   .photo-credit{
     display:flex;
+    align-items: center;
     justify-content: space-between;
     gap: 10px;
     font-family: var(--font-mono);
@@ -942,7 +961,7 @@
   }
 
   /* ---------- guess panel ---------- */
-  .guess-panel{ padding: 14px; }
+  .guess-panel{ padding: 14px; background: var(--color-content-bg); border: none; }
   .guess-heading-row{
     display: flex;
     align-items: center;
@@ -950,9 +969,9 @@
     margin: 0 0 10px;
   }
   .guess-panel h2{
-    font-family: var(--font-body);
-    font-size: 11px;
-    letter-spacing: 0.14em;
+    font-family: 'Seaford', 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: normal;
     text-transform: uppercase;
     color: var(--color-accent);
     margin: 0;
@@ -1063,7 +1082,7 @@
   .guess-row input{
     flex: 1;
     min-width: 160px;
-    background: var(--color-bg-page-alt);
+    background: var(--color-input-bg);
     border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
     border-radius: var(--radius);
     color: var(--color-text-primary);
@@ -1098,6 +1117,17 @@
     font-weight: 600;
   }
   button.primary:hover:not(:disabled){ background: var(--color-accent-hover); }
+
+  /* Vireo dark's accent (#bfd88b) is a light pastel — white button text on
+     it is ~1.6:1 contrast. This selector only matches vireo (dark
+     appearance, no data-theme attribute set), so no other theme is affected. */
+  [data-appearance="dark"]:not([data-theme]) button.primary{
+    background: #55803a;
+    border-color: #55803a;
+  }
+  [data-appearance="dark"]:not([data-theme]) button.primary:hover:not(:disabled){
+    background: #4a7530;
+  }
 
   button.ghost{
     background: transparent;
@@ -1168,31 +1198,34 @@
   /* ---------- feed ---------- */
   .feed{
     list-style: none;
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     padding: 0;
     display:flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
     max-height: 320px;
     overflow-y: auto;
   }
+  /* Kept compact and understated — a subtler fill/border, tighter padding
+     and type, while still leaning on the same border-left tier colors
+     for at-a-glance scanning. */
   .feed li{
     display:flex;
     align-items: center;
-    gap: 10px;
-    background: var(--color-bg-page-alt);
+    gap: 8px;
+    background: color-mix(in srgb, var(--color-bg-page-alt) 55%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
-    border-left: 4px solid var(--color-text-muted);
-    border-radius: var(--radius);
-    padding: 9px 11px;
-    font-size: 13px;
+    border-left: 3px solid var(--color-text-muted);
+    border-radius: calc(var(--radius) - 2px);
+    padding: 6px 9px;
+    font-size: 12px;
     animation: slidein 0.25s ease;
   }
   @keyframes slidein{ from{ opacity:0; transform: translateY(-6px);} to{ opacity:1; transform:none; } }
   .feed li.s-100{
     border-left-color: var(--color-tier-species);
-    border-left-width: 5px;
-    background: var(--color-tier-species-bg);
+    border-left-width: 4px;
+    background: color-mix(in srgb, var(--color-tier-species-bg) 70%, transparent);
   }
   .feed li.s-100 .fm b{ color: var(--color-tier-species-dim); }
   .feed li.s-hi{ border-left-color: var(--color-tier-family); }
@@ -1207,7 +1240,7 @@
   .feed li.s-echo.tier-species{ border-left-color: var(--color-tier-species); }
   .feed li.has-echo{
     align-items: flex-start;
-    border-left-width: 5px;
+    border-left-width: 4px;
     animation: slidein 0.25s ease, echoPulse 1.2s ease 0.2s;
   }
   @keyframes echoPulse{
@@ -1261,11 +1294,11 @@
   .echo-mark.tier-species{ box-shadow: 0 0 0 1px var(--color-tier-species-ring); }
 
   /* ---------- ladder / cladogram ---------- */
-  .ladder-card{ padding: 16px 16px 18px; position: sticky; top: 16px; }
+  .ladder-card{ padding: 16px 16px 18px; position: sticky; top: 16px; border: none; }
   .ladder-card h2{
-    font-family: var(--font-body);
-    font-size: 11px;
-    letter-spacing: 0.14em;
+    font-family: 'Seaford', 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: normal;
     text-transform: uppercase;
     color: var(--color-accent);
     margin: 0 0 4px;
@@ -1606,10 +1639,10 @@
     display: none;
     font-family: var(--font-body);
     font-size: 12.5px;
-    line-height: 1.4;
+    line-height: 1.6;
     color: var(--color-text-muted);
-    background: var(--color-surface-translucent);
-    backdrop-filter: blur(3px);
+    background: var(--color-bg-page);
+    backdrop-filter: none;
     border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
     border-top: none;
     border-radius: 0 0 var(--radius) var(--radius);
@@ -1644,7 +1677,7 @@
   }
   .region-row select,
   .region-row input{
-    background: var(--color-surface);
+    background: var(--color-input-bg);
     border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
     color: var(--color-text-primary);
     border-radius: var(--radius);
@@ -1814,7 +1847,7 @@
     padding: 4px 5px;
     border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
     border-radius: var(--radius);
-    background: var(--color-surface);
+    background: var(--color-input-bg);
     color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: 11.5px;
@@ -2196,6 +2229,70 @@
   @media (max-width: 560px){
     .theme-switcher{ right: auto; top: auto; }
   }
+
+
+  /* ==========================================================
+     CONSISTENT CONTENT SURFACES
+     The right-hand application pane is one continuous surface. Light
+     themes use white; dark themes use that theme's page background.
+     Form/photo fields retain the pale, desaturated theme background.
+     ========================================================== */
+  .wrap{
+    background: var(--color-content-bg);
+  }
+
+  .guess-panel,
+  .ladder-card{
+    background: var(--color-content-bg);
+    border-color: transparent;
+  }
+
+  /* Observation caption uses the same surface as the right-hand pane. */
+  .photo-credit{
+    background: var(--color-content-bg);
+    color: var(--color-text-muted);
+    border-bottom-color: transparent;
+  }
+  .photo-credit a{ color: var(--color-text-muted); }
+
+  /* Guess log: no fill, box, or border; retain only the tier trim. */
+  .feed li,
+  .feed li.s-100,
+  .feed li.s-hi,
+  .feed li.s-genus,
+  .feed li.s-mid,
+  .feed li.s-lo,
+  .feed li.s-none,
+  .feed li.s-echo{
+    background: transparent !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none;
+  }
+
+  /* Map caption is the same surface as the right-hand pane, not the
+     pale photo/field surface. */
+  .obs-map-caption{
+    color: var(--color-text-muted);
+    background: var(--color-bg-page);
+    border-color: transparent;
+    backdrop-filter: none;
+  }
+
+  /* The observation image stage and all text-entry fields share the
+     theme's pale secondary/accent surface. */
+  .photo-card,
+  .photo-frame,
+  .guess-row input,
+  .region-row select,
+  .region-row input,
+  .rarity-number{
+    background: var(--color-input-bg);
+  }
+
+
 </style>
 </head>
 <body>
@@ -2288,28 +2385,28 @@
             </svg>
           </button>
           <div class="theme-menu" id="themeMenu" role="menu" aria-hidden="true">
-            <button type="button" class="theme-swatch" data-theme-value="" title="Canopy (default)" aria-label="Canopy theme">
+            <button type="button" class="theme-swatch" data-theme-value="" title="Vireo (default)" aria-label="Vireo theme">
               <span class="swatch-half swatch-a" style="background:#f8f8f8"></span><span class="swatch-half swatch-b" style="background:#8cb930"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="meadow" title="Meadow" aria-label="Meadow theme">
+            <button type="button" class="theme-swatch" data-theme-value="bluebird" title="Bluebird" aria-label="Bluebird theme">
               <span class="swatch-half swatch-a" style="background:#ffffff"></span><span class="swatch-half swatch-b" style="background:#3454d1"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="field-notes" title="Field Notes" aria-label="Field Notes theme">
-              <span class="swatch-half swatch-a" style="background:#f6efe0"></span><span class="swatch-half swatch-b" style="background:#a5541f"></span>
+            <button type="button" class="theme-swatch" data-theme-value="thrasher" title="Thrasher" aria-label="Thrasher theme">
+              <span class="swatch-half swatch-a" style="background:#f7f5f1"></span><span class="swatch-half swatch-b" style="background:#a5541f"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="tide" title="Tide" aria-label="Tide theme">
-              <span class="swatch-half swatch-a" style="background:#eef7f9"></span><span class="swatch-half swatch-b" style="background:#0f8fa8"></span>
+            <button type="button" class="theme-swatch" data-theme-value="kingfisher" title="Kingfisher" aria-label="Kingfisher theme">
+              <span class="swatch-half swatch-a" style="background:#f5f8f9"></span><span class="swatch-half swatch-b" style="background:#0f8fa8"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="blossom" title="Blossom" aria-label="Blossom theme">
-              <span class="swatch-half swatch-a" style="background:#fdf3f6"></span><span class="swatch-half swatch-b" style="background:#d94f7f"></span>
+            <button type="button" class="theme-swatch" data-theme-value="galah" title="Galah" aria-label="Galah theme">
+              <span class="swatch-half swatch-a" style="background:#f8f6f7"></span><span class="swatch-half swatch-b" style="background:#d94f7f"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="dune" title="Dune" aria-label="Dune theme">
-              <span class="swatch-half swatch-a" style="background:#faf3e7"></span><span class="swatch-half swatch-b" style="background:#c4732f"></span>
+            <button type="button" class="theme-swatch" data-theme-value="kestrel" title="Kestrel" aria-label="Kestrel theme">
+              <span class="swatch-half swatch-a" style="background:#f6f6f0"></span><span class="swatch-half swatch-b" style="background:#a67c1f"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="ink" title="Ink" aria-label="Ink theme">
+            <button type="button" class="theme-swatch" data-theme-value="grackle" title="Grackle" aria-label="Grackle theme">
               <span class="swatch-half swatch-a" style="background:#f8f7fb"></span><span class="swatch-half swatch-b" style="background:#4d1de8"></span>
             </button>
-            <button type="button" class="theme-swatch" data-theme-value="slate" title="Slate" aria-label="Slate theme">
+            <button type="button" class="theme-swatch" data-theme-value="heron" title="Heron" aria-label="Heron theme">
               <span class="swatch-half swatch-a" style="background:#f5f6f7"></span><span class="swatch-half swatch-b" style="background:#4c6a75"></span>
             </button>
             <div class="appearance-row">
@@ -4212,17 +4309,7 @@
             width:20px; height:20px; border-radius:50%;
             background:#ffffff; border:2px solid #111111;
             box-shadow:0 1px 3px rgba(0,0,0,0.4);
-            display:flex; align-items:center; justify-content:center;
-          ">
-            <svg width="13" height="13" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polygon fill="#111111" points="3,14 8,10.8 8,17.2"/>
-              <ellipse fill="#111111" cx="13" cy="14" rx="6" ry="4.5"/>
-              <circle fill="#111111" cx="18.5" cy="10" r="3.2"/>
-              <polygon fill="#111111" points="21.3,9.6 24,8.6 21.5,11.4"/>
-              <path fill="#ffffff" fill-opacity="0.55" d="M10 12.5 Q14 9 17 13.5 Q13 13 10 12.5 Z"/>
-              <circle fill="#ffffff" cx="19.6" cy="9.2" r="0.65"/>
-            </svg>
-          </div>`,
+          "></div>`,
         iconSize: [20, 20],
         iconAnchor: [10, 10],
       });
