@@ -961,6 +961,65 @@
     outline-offset: 2px;
   }
 
+  /* Second observation caption panel — sits at the bottom of the
+     observation frame, below the photo/map area, and shares the credit
+     bar's typography/surface but holds the region + rarity controls. */
+  .obs-settings-row{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    color: var(--color-text-muted);
+    padding: 8px 14px 9px;
+    border-top: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+    flex-wrap: wrap;
+  }
+  .obs-settings-row .region-row,
+  .obs-settings-row .rarity-row{
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    gap: 6px;
+  }
+  .obs-settings-row .region-row label,
+  .obs-settings-row .rarity-row label{
+    font-size: 9px;
+  }
+  .obs-settings-row .region-row select,
+  .obs-settings-row .region-row input{
+    padding: 3px 6px;
+    font-size: 10.5px;
+  }
+  .obs-settings-row .region-row input{
+    width: 110px;
+    min-width: 70px;
+    max-width: 34vw;
+  }
+  .obs-settings-row .region-status{
+    font-size: 9.5px;
+  }
+  .obs-settings-row .rarity-row .diff-end{
+    font-size: 9px;
+  }
+  .obs-settings-row .rarity-row input[type="range"]{
+    width: 220px;
+    max-width: 40vw;
+  }
+  .obs-settings-row .rarity-row .rarity-number{
+    width: 30px;
+    padding: 2px 3px;
+    font-size: 10px;
+  }
+  .obs-settings-row .diff-label{
+    font-size: 9.5px;
+    min-width: 66px;
+    flex: 0 0 auto;
+  }
+
+  /* Mode kept functional under the hood; front-end setting hidden for now. */
+  .gamemode-row{ display: none; }
+
   /* ---------- guess panel ---------- */
   .guess-panel{ padding: 14px; background: var(--color-content-bg); border: none; }
   .guess-heading-row{
@@ -1734,7 +1793,7 @@
 
   .region-suggest{
     position: absolute;
-    top: calc(100% + 4px);
+    bottom: calc(100% + 4px);
     left: 0;
     min-width: 220px;
     max-width: 360px;
@@ -2264,6 +2323,11 @@
     color: var(--color-text-muted);
     border-bottom-color: transparent;
   }
+  .obs-settings-row{
+    background: var(--color-content-bg);
+    color: var(--color-text-muted);
+    border-top-color: transparent;
+  }
   .photo-credit a{ color: var(--color-text-muted); }
 
   /* Guess log: no fill, box, or border; retain only the tier trim. */
@@ -2316,25 +2380,6 @@
       <div class="gamemode-row">
         <label for="gamemodeSelect">Mode</label>
         <select id="gamemodeSelect"></select>
-      </div>
-
-      <div class="region-row">
-        <label for="regionInput">Region</label>
-        <span class="region-input-wrap">
-          <input type="text" id="regionInput" placeholder="Everywhere" autocomplete="off">
-          <span class="region-flag" id="regionFlag" aria-hidden="true"></span>
-          <ul class="region-suggest" id="regionSuggest" role="listbox" aria-label="Region suggestions"></ul>
-        </span>
-        <span class="region-status" id="regionStatus"></span>
-      </div>
-
-      <div class="rarity-row">
-        <label for="raritySlider">rarity</label>
-        <input type="number" id="rarityNumber" class="rarity-number" min="0" max="100" step="1" value="50" inputmode="numeric" aria-label="rarity value">
-        <span class="diff-end">Common</span>
-        <input type="range" id="raritySlider" min="0" max="100" step="1" value="50" aria-label="rarity">
-        <span class="diff-end">Rare</span>
-        <span class="diff-label" id="rarityLabel">Balanced</span>
       </div>
     </div>
   </header>
@@ -2434,10 +2479,30 @@
           </div>
         </div>
         </div>
-        </div>
         <div class="obs-map-wrap" id="obsMapWrap">
           <div class="obs-map-corner" id="obsMapCorner"></div>
           <div class="obs-map-caption" id="obsMapCaption"></div>
+        </div>
+        </div>
+        <div class="obs-settings-row">
+          <div class="region-row">
+            <label for="regionInput">Region</label>
+            <span class="region-input-wrap">
+              <input type="text" id="regionInput" placeholder="Everywhere" autocomplete="off">
+              <span class="region-flag" id="regionFlag" aria-hidden="true"></span>
+              <ul class="region-suggest" id="regionSuggest" role="listbox" aria-label="Region suggestions"></ul>
+            </span>
+            <span class="region-status" id="regionStatus"></span>
+          </div>
+
+          <div class="rarity-row">
+            <label for="raritySlider">rarity</label>
+            <input type="number" id="rarityNumber" class="rarity-number" min="0" max="100" step="1" value="50" inputmode="numeric" aria-label="rarity value">
+            <span class="diff-end">Common</span>
+            <input type="range" id="raritySlider" min="0" max="100" step="1" value="50" aria-label="rarity">
+            <span class="diff-end">Rare</span>
+            <span class="diff-label" id="rarityLabel">Balanced</span>
+          </div>
         </div>
       </div>
     </div>
