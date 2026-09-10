@@ -2374,9 +2374,13 @@
 <div class="wrap">
 
   <header class="header-bar">
-    <h1 class="app-title"><em>Av</em><b>ID</b></h1>
+    <h1 class="app-title"><em id="appTitlePrefix">Av</em><b>ID</b></h1>
 
     <div class="header-controls">
+      <div class="gamemode-row">
+        <label for="classSelect">Class</label>
+        <select id="classSelect"></select>
+      </div>
       <div class="gamemode-row">
         <label for="gamemodeSelect">Mode</label>
         <select id="gamemodeSelect"></select>
@@ -2510,16 +2514,16 @@
     <div class="right-col">
       <div class="card guess-panel">
         <div class="guess-heading-row">
-          <h2>Guess that bird!</h2>
+          <h2 id="guessHeading">Guess that bird!</h2>
           <span class="info-wrap" id="infoWrap">
             <button type="button" class="info-btn" id="infoBtn" aria-haspopup="dialog" aria-expanded="false" aria-label="About AvID" title="About AvID">?</button>
             <div class="info-popover" id="infoPopover" role="dialog" aria-hidden="true" aria-labelledby="infoBtn">
               <div class="info-popover-label">How to play</div>
-              <p><b><i>Av</i>ID</b> (Aves Identifier) uses citizen science observations of birds around the world to test your field knowledge skills.</p>
-              <p>Look at the image, and <span class="info-sound-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"></path><g class="sound-icon-waves"><path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path><path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path></g></svg></span> <b>listen</b> to the bird calls, then guess the species!</p>
-              <p>You can use common names or scientific nomenclature. It's okay if you don't know — try to get as close as possible on the taxonomic tree. You can use the <span class="info-pick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="2" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="2" y="16.5" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1"></rect></svg></span> <b>pick me</b> button to pick the right bird by matching it to a picture.</p>
+              <p><b><i id="infoTitlePrefix">Av</i>ID</b> (<span id="infoFullName">Aves Identifier</span>) uses citizen science observations of <span id="infoPlural1">birds</span> around the world to test your field knowledge skills.</p>
+              <p>Look at the image, and <span class="info-sound-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"></path><g class="sound-icon-waves"><path d="M16.5 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path><path d="M19 6a9 9 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"></path></g></svg></span> <b>listen</b> to the <span id="infoNounListen">bird</span> <span id="infoSoundWord">calls</span>, then guess the species!</p>
+              <p>You can use common names or scientific nomenclature. It's okay if you don't know — try to get as close as possible on the taxonomic tree. You can use the <span class="info-pick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="2" width="5.5" height="5.5" rx="1"></rect><rect x="2" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1"></rect><rect x="2" y="16.5" width="5.5" height="5.5" rx="1"></rect><rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1"></rect><rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1"></rect></svg></span> <b>pick me</b> button to pick the right <span id="infoNounPick">bird</span> by matching it to a picture.</p>
               <p>You can practice in your own backyard by narrowing the <b>region</b>, or focus on a specific branch of the tree by selecting the <b>mode</b>.</p>
-              <p>Increasing the <b>rarity</b> will increase your chances of encountering rare birds.</p>
+              <p>Increasing the <b>rarity</b> will increase your chances of encountering rare <span id="infoPlural2">birds</span>.</p>
             </div>
           </span>
         </div>
@@ -2561,7 +2565,7 @@
       </div>
       <div class="pick-main">
         <div class="pick-photo">
-          <img id="pickPhotoImg" src="" alt="Mystery bird observation" tabindex="0">
+          <img id="pickPhotoImg" src="" alt="Mystery observation" tabindex="0">
         </div>
         <div class="pick-body" id="pickBody">
           <div class="pick-status">Gathering candidates…</div>
@@ -2652,8 +2656,81 @@
     { id: "afroaves", label: "Owls, Hawks & Woodpeckers (Afroaves)", q: "71261,19350,17550,2114,525653,20715,525652,3686", group: "Major bird clades" }, // Accipitriformes, Strigiformes, Piciformes, Coraciiformes, Bucerotiformes, Trogoniformes, Leptosomiformes, Coliiformes
     { id: "australaves", label: "Songbirds, Parrots & Falcons (Australaves)", q: "7251,18874,67570,71262", group: "Major bird clades" }, // Passeriformes, Psittaciformes, Falconiformes, Cariamiformes
   ];
+  // ---------- classes (top-level taxonomic filter) ----------
+  // Aves has curated order-level GAMEMODES (the AviList-backed bird
+  // taxonomy above). Several other classes also get a handful of curated
+  // "major clade" modes below (order-level groupings, given birder-friendly
+  // common names) so people can narrow in on a familiar group without
+  // hunting through the full class. Classes without a curated list below
+  // fall back to a single "All <Class>" mode — guess resolution for these
+  // falls back to live iNaturalist taxon search rather than AviList (see
+  // resolveGuess).
+  const CLASSES = [
+    { id: "aves", label: "Birds", taxonId: "3", noun: "bird", plural: "birds", appPrefix: "Av", fullName: "Aves Identifier", soundWord: "calls" },
+    { id: "mammalia", label: "Mammals", taxonId: "40151", noun: "mammal", plural: "mammals", appPrefix: "Mamm", fullName: "Mammalia Identifier", soundWord: "sounds" },
+    { id: "reptilia", label: "Reptiles", taxonId: "26036", noun: "reptile", plural: "reptiles", appPrefix: "Rep", fullName: "Reptilia Identifier", soundWord: "sounds" },
+    { id: "amphibia", label: "Amphibians", taxonId: "20978", noun: "amphibian", plural: "amphibians", appPrefix: "Amph", fullName: "Amphibia Identifier", soundWord: "calls" },
+    { id: "actinopterygii", label: "Ray-finned Fish", taxonId: "47178", noun: "fish", plural: "fish", appPrefix: "Fish", fullName: "Fish Identifier", soundWord: "sounds" },
+    { id: "sarcopterygii", label: "Lobe-finned Fish", taxonId: "85497", noun: "fish", plural: "fish", appPrefix: "Fish", fullName: "Fish Identifier", soundWord: "sounds" },
+    { id: "arachnida", label: "Arachnids", taxonId: "47119", noun: "arachnid", plural: "arachnids", appPrefix: "Arachn", fullName: "Arachnida Identifier", soundWord: "sounds" },
+  ];
+
+  // Curated order-level modes for non-avian classes. Each entry mirrors the
+  // shape of GAMEMODES above: an "all" catch-all plus 3-5 major orders,
+  // given common names alongside their Latin order name. iNaturalist
+  // order-level taxon IDs.
+  const MAMMAL_MODES = [
+    { id: "all", label: "All Mammals", q: "40151", group: null },
+    { id: "carnivores", label: "Carnivores (Carnivora)", q: "41573", group: "Major groups" },
+    { id: "primates", label: "Primates", q: "43367", group: "Major groups" },
+    { id: "rodents", label: "Rodents (Rodentia)", q: "43698", group: "Major groups" },
+    { id: "bats", label: "Bats (Chiroptera)", q: "40268", group: "Major groups" },
+    { id: "hoofed", label: "Hoofed Mammals (Artiodactyla & Perissodactyla)", q: "152870,43327", group: "Major groups" },
+  ];
+  const REPTILE_MODES = [
+    { id: "all", label: "All Reptiles", q: "26036", group: null },
+    { id: "squamates", label: "Lizards & Snakes (Squamata)", q: "26172", group: "Major groups" },
+    { id: "turtles", label: "Turtles (Testudines)", q: "39532", group: "Major groups" },
+    { id: "crocodilians", label: "Crocodilians (Crocodylia)", q: "26039", group: "Major groups" },
+    { id: "tuatara", label: "Tuatara (Rhynchocephalia)", q: "26162", group: "Major groups" },
+  ];
+  const AMPHIBIAN_MODES = [
+    { id: "all", label: "All Amphibians", q: "20978", group: null },
+    { id: "frogs", label: "Frogs & Toads (Anura)", q: "20979", group: "Major groups" },
+    { id: "salamanders", label: "Salamanders & Newts (Caudata)", q: "26718", group: "Major groups" },
+    { id: "caecilians", label: "Caecilians (Gymnophiona)", q: "27880", group: "Major groups" },
+  ];
+  const FISH_MODES = [
+    { id: "all", label: "All Ray-finned Fish", q: "47178", group: null },
+    { id: "perch", label: "Perch & Allies (Perciformes)", q: "47233", group: "Major groups" },
+    { id: "carp", label: "Carp & Minnows (Cypriniformes)", q: "49216", group: "Major groups" },
+    { id: "catfish", label: "Catfish (Siluriformes)", q: "49175", group: "Major groups" },
+    { id: "salmon", label: "Salmon & Trout (Salmoniformes)", q: "47521", group: "Major groups" },
+  ];
+  const ARACHNID_MODES = [
+    { id: "all", label: "All Arachnids", q: "47119", group: null },
+    { id: "spiders", label: "Spiders (Araneae)", q: "47118", group: "Major groups" },
+    { id: "scorpions", label: "Scorpions (Scorpiones)", q: "48894", group: "Major groups" },
+    { id: "ticks", label: "Ticks (Ixodida)", q: "51672", group: "Major groups" },
+    { id: "mites", label: "Mites (Acariformes & Parasitiformes)", q: "129763,129762", group: "Major groups" },
+    { id: "harvestmen", label: "Harvestmen (Opiliones)", q: "47367", group: "Major groups" },
+  ];
+  const CURATED_MODES_BY_CLASS = {
+    mammalia: MAMMAL_MODES,
+    reptilia: REPTILE_MODES,
+    amphibia: AMPHIBIAN_MODES,
+    actinopterygii: FISH_MODES,
+    arachnida: ARACHNID_MODES,
+  };
+  function gamemodesForClass(cls){
+    if(cls.id === "aves") return GAMEMODES;
+    return CURATED_MODES_BY_CLASS[cls.id] || [{ id: "all", label: `All ${cls.label}`, q: cls.taxonId, group: null }];
+  }
+
   const urlTaxonId = params.get("taxon_id");
-  let gamemode = urlTaxonId ? null : (GAMEMODES.find(m => m.id === params.get("mode")) || GAMEMODES[0]);
+  let currentClass = CLASSES.find(c => c.id === params.get("class")) || CLASSES[0];
+  let activeGamemodes = gamemodesForClass(currentClass);
+  let gamemode = urlTaxonId ? null : (activeGamemodes.find(m => m.id === params.get("mode")) || activeGamemodes[0]);
   let cladeId = urlTaxonId || gamemode.q; // 3 = Aves (birds) by default
 
   let placeId = params.get("place_id") || null;
@@ -2754,6 +2831,7 @@
     revealBox: document.getElementById("revealBox"),
     errBanner: document.getElementById("errBanner"),
     hintText: document.getElementById("hintText"),
+    classSelect: document.getElementById("classSelect"),
     gamemodeSelect: document.getElementById("gamemodeSelect"),
     regionInput: document.getElementById("regionInput"),
     regionFlag: document.getElementById("regionFlag"),
@@ -2881,7 +2959,7 @@
     const maxPage = attempt < 2 ? 45 : 10;
     const page = rnd(1, maxPage);
     const qs = new URLSearchParams({
-      taxon_id: cladeId,
+      ...(cladeId.includes(",") ? { taxon_ids: cladeId } : { taxon_id: cladeId }),
       photos: "true",
       quality_grade: "research",
       per_page: "30",
@@ -2910,7 +2988,7 @@
     const cacheKey = `${cladeId}:${placeId || ""}`;
     if(speciesPoolCache[cacheKey]) return speciesPoolCache[cacheKey];
     const qs = new URLSearchParams({
-      taxon_id: cladeId,
+      ...(cladeId.includes(",") ? { taxon_ids: cladeId } : { taxon_id: cladeId }),
       photos: "true",
       quality_grade: "research",
       hrank: "species",
@@ -3480,7 +3558,7 @@
 
   function updateAdvanceButton(){
     if(state && state.finished){
-      el.advanceBtn.textContent = "Next bird →";
+      el.advanceBtn.textContent = `Next ${currentClass.noun} →`;
       el.advanceBtn.classList.add("is-next");
       el.advanceBtn.classList.remove("is-reveal");
     }else{
@@ -3531,7 +3609,7 @@
     tierGridActive = false;
     return new Promise(resolve => {
       const img = new Image();
-      img.alt = "Mystery bird observation";
+      img.alt = `Mystery ${currentClass.noun} observation`;
       // Give the browser an explicit hint that this image should win any
       // contention over the sound-lookup requests below.
       img.fetchPriority = "high";
@@ -4049,9 +4127,30 @@
     return taxon;
   }
 
+  // Non-bird classes have no equivalent curated offline taxonomy, so guesses
+  // are resolved directly against live iNaturalist taxa (scoped to the
+  // current class via cladeId to avoid cross-class name collisions). Only
+  // exact scientific/common-name matches are awarded, same conservative
+  // rule as matchTier's comment describes — no substring/fuzzy guessing.
+  async function resolveGenericGuess(cleaned){
+    const cacheKey = `${currentClass.id}:${tokenize(cleaned).map(normalizeToken).filter(Boolean).join(" ")}`;
+    if(NAME_LOOKUP_CACHE.has(cacheKey)) return NAME_LOOKUP_CACHE.get(cacheKey);
+
+    let results = [];
+    try{ results = await searchTaxa(cleaned, cladeId, 1); }catch(e){ results = []; }
+
+    const exact = results.filter(t => matchTier(cleaned, t) === 0);
+    const chosen = exact.length === 1 ? exact[0] : null;
+
+    NAME_LOOKUP_CACHE.set(cacheKey, chosen);
+    return chosen;
+  }
+
   async function resolveGuess(query){
     const cleaned = query.trim();
     if(!cleaned) return null;
+
+    if(currentClass.id !== "aves") return resolveGenericGuess(cleaned);
 
     // ---------- 1. AviList is authoritative ----------
     // Exact scientific/common names are resolved directly against AviList.
@@ -4160,7 +4259,7 @@
   }
 
   function feedbackFor(idx, exactSpecies){
-    if(idx < 0) return { text:"Not even the same kingdom.", cls:"s-none" };
+    if(idx < 0) return { text:"Not even the same order.", cls:"s-none" };
     const node = state.chain[idx];
     const rank = node ? node.rank : RANKS[idx];
     if(rank === "species") return exactSpecies
@@ -5018,8 +5117,9 @@
 
   // ---------- gamemode selector ----------
   function populateGamemodeSelect(){
+    el.gamemodeSelect.innerHTML = "";
     const groups = new Map(); // group label -> <optgroup> (or null for ungrouped)
-    GAMEMODES.forEach(m => {
+    activeGamemodes.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.id;
       opt.textContent = m.label;
@@ -5050,10 +5150,73 @@
   function onGamemodeChange(){
     const val = el.gamemodeSelect.value;
     if(val === "__url__") return;
-    gamemode = GAMEMODES.find(m => m.id === val) || GAMEMODES[0];
+    gamemode = activeGamemodes.find(m => m.id === val) || activeGamemodes[0];
     cladeId = gamemode.q;
 
     const url = new URL(location.href);
+    url.searchParams.set("mode", gamemode.id);
+    url.searchParams.delete("taxon_id");
+    history.replaceState(null, "", url);
+
+    loadNewRound();
+  }
+
+  // ---------- class selector ----------
+  function populateClassSelect(){
+    el.classSelect.innerHTML = "";
+    CLASSES.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.label;
+      el.classSelect.appendChild(opt);
+    });
+    el.classSelect.value = currentClass.id;
+  }
+
+  // Swaps every "AvID / bird" bit of chrome (page title, header logo, guess
+  // heading, alt text, and the info popover copy) for the wording that
+  // matches whichever class is currently selected — e.g. selecting Reptilia
+  // turns "AvID" into "RepID" and "Guess that bird!" into "Guess that
+  // reptile!". Fish classes just say "fish" rather than "actinopterygiian".
+  function applyClassBranding(cls){
+    document.title = `${cls.appPrefix}ID - Field ID`;
+
+    const titlePrefixEl = document.getElementById("appTitlePrefix");
+    if(titlePrefixEl) titlePrefixEl.textContent = cls.appPrefix;
+
+    const headingEl = document.getElementById("guessHeading");
+    if(headingEl) headingEl.textContent = `Guess that ${cls.noun}!`;
+
+    const infoBtnEl = document.getElementById("infoBtn");
+    if(infoBtnEl){
+      infoBtnEl.setAttribute("aria-label", `About ${cls.appPrefix}ID`);
+      infoBtnEl.setAttribute("title", `About ${cls.appPrefix}ID`);
+    }
+
+    const setText = (id, text) => {
+      const node = document.getElementById(id);
+      if(node) node.textContent = text;
+    };
+    setText("infoTitlePrefix", cls.appPrefix);
+    setText("infoFullName", cls.fullName);
+    setText("infoPlural1", cls.plural);
+    setText("infoNounListen", cls.noun);
+    setText("infoSoundWord", cls.soundWord);
+    setText("infoNounPick", cls.noun);
+    setText("infoPlural2", cls.plural);
+  }
+
+  function onClassChange(){
+    const val = el.classSelect.value;
+    currentClass = CLASSES.find(c => c.id === val) || CLASSES[0];
+    activeGamemodes = gamemodesForClass(currentClass);
+    gamemode = activeGamemodes[0];
+    cladeId = gamemode.q;
+    populateGamemodeSelect();
+    applyClassBranding(currentClass);
+
+    const url = new URL(location.href);
+    url.searchParams.set("class", currentClass.id);
     url.searchParams.set("mode", gamemode.id);
     url.searchParams.delete("taxon_id");
     history.replaceState(null, "", url);
@@ -5459,7 +5622,7 @@
   // drop a listener attached directly to the image element.
   el.photoFrame.addEventListener("click", e => {
     const img = e.target.closest("img");
-    if(!img || img.alt !== "Mystery bird observation" || !currentOriginalPhotoUrl) return;
+    if(!img || !img.alt.startsWith("Mystery ") || !img.alt.endsWith(" observation") || !currentOriginalPhotoUrl) return;
     window.open(currentOriginalPhotoUrl, "_blank", "noopener");
   });
   el.creditText.addEventListener("click", e => {
@@ -5491,6 +5654,7 @@
   el.pickCloseBtn.addEventListener("click", closePickOverlay);
   el.pickRevealBtn.addEventListener("click", () => { closePickOverlay(); finishRound(false); });
   el.gamemodeSelect.addEventListener("change", onGamemodeChange);
+  el.classSelect.addEventListener("change", onClassChange);
   el.regionInput.addEventListener("change", onRegionChange);
   el.regionInput.addEventListener("input", () => {
     sizeRegionInput();
@@ -5603,7 +5767,9 @@
     el.rarityLabel.textContent = text;
   }
 
+  populateClassSelect();
   populateGamemodeSelect();
+  applyClassBranding(currentClass);
   initializeRegionInput();
   el.rarityNumber.value = String(rarity);
   updateBackButton();
