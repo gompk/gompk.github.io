@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AvID - Field ID</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23233c2e'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='Georgia, serif' font-size='30' font-weight='700' fill='%23f4f1ea'%3EAv%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2187,7 +2187,12 @@
   .pick-progress b{ color: var(--color-accent); }
 
   @media (prefers-reduced-motion: reduce){
-    *{ animation-duration: 0.001ms !important; transition: none !important; }
+    /* Don't shrink durations to ~0: on infinite animations (shimmer skeleton,
+       sound spinner) that strobes thousands of times a second. Stop them instead. */
+    *{ transition: none !important; }
+    .skeleton{ animation: none !important; }
+    .sound-corner.is-loading svg{ animation: none !important; opacity: 0.55; }
+    .photo-frame img, .pick-overlay *{ animation: none !important; }
   }
 
   /* ---------- theme switcher ---------- */
@@ -2367,6 +2372,116 @@
     background: var(--color-input-bg);
   }
 
+  /* ==========================================================
+     MOBILE MODE  (<= 860px wide only — desktop is untouched)
+     Appended last so it wins over the earlier theme overrides.
+     ========================================================== */
+  @media (max-width: 860px){
+    html{ -webkit-text-size-adjust: 100%; }
+    body{ overflow-x: hidden; background-attachment: scroll; -webkit-tap-highlight-color: transparent; }
+    button, select, input, summary, a{ touch-action: manipulation; }
+
+    .wrap{
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(10px + env(safe-area-inset-top, 0px))
+               calc(12px + env(safe-area-inset-right, 0px))
+               calc(28px + env(safe-area-inset-bottom, 0px))
+               calc(12px + env(safe-area-inset-left, 0px));
+    }
+
+    /* header: title + Class + Mode on one compact row */
+    .header-bar{ flex-wrap: nowrap; gap: 10px; margin-bottom: 10px; align-items: center; }
+    .app-title{ flex: 0 0 auto; font-size: 26px; }
+    .header-controls{ flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; gap: 8px; justify-content: flex-end; }
+    .header-controls .gamemode-row{ flex: 1 1 0; min-width: 0; display: flex; }
+    .header-controls .gamemode-row label{
+      position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .header-controls .gamemode-row select{
+      width: 100%; min-width: 0; min-height: 42px; font-size: 16px; /* 16px stops iOS zoom-on-focus */
+      text-overflow: ellipsis;
+    }
+
+    .err-banner{ margin-bottom: 10px; font-size: 13px; }
+
+    /* photo card — the base rule gives .photo-stage `flex:1`, which collapses
+       it to 0px tall once the card is auto-height. Give it a real height. */
+    .photo-card{ border-radius: 10px; }
+    .photo-stage{
+      flex: 0 0 auto !important;
+      height: clamp(230px, 72vw, 520px) !important;
+    }
+    .photo-card.revealed .photo-stage{
+      height: clamp(250px, 82vw, 560px) !important;
+    }
+    .photo-top-controls{ top: 10px; right: 10px; gap: 6px; }
+    .photo-top-controls > button,
+    .photo-top-controls .theme-toggle{ flex: 0 0 42px; }
+    .photo-back-corner, .sound-corner, .pick-corner, .theme-toggle{ width: 42px; height: 42px; }
+    .obs-map-wrap{ width: min(190px, 44vw); bottom: 10px; }
+
+    .photo-credit{ padding: 8px 12px; font-size: 11px; gap: 4px 10px; }
+
+    /* region + rarity: stacked, full width, finger-sized */
+    .obs-settings-row{
+      flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 12px 12px;
+    }
+    .obs-settings-row .region-row,
+    .obs-settings-row .rarity-row{ font-size: 12px; gap: 8px; }
+    .obs-settings-row .region-row label,
+    .obs-settings-row .rarity-row label{ font-size: 10.5px; flex: 0 0 52px; }
+    .region-input-wrap{ flex: 1 1 auto; min-width: 0; }
+    .region-input-wrap{ display: flex; }
+    .obs-settings-row .region-row input{
+      width: 100% !important; min-width: 0; max-width: none; min-height: 40px; padding: 6px 10px; font-size: 16px;
+    }
+    .region-suggest{ min-width: 0; width: 100%; max-width: none; }
+    .rarity-row{ flex-wrap: nowrap; }
+    .obs-settings-row .rarity-row .rarity-number, .rarity-number{ min-height: 38px; width: 52px; min-width: 0; font-size: 16px; }
+    .theme-swatch{ min-height: 34px; }
+    .rarity-row .diff-end{ display: none; }
+    .rarity-row .diff-label{ flex: 0 0 auto; min-width: 0; text-align: right; font-size: 12px; white-space: nowrap; }
+    .obs-settings-row .rarity-row{ min-width: 0; max-width: 100%; }
+    .rarity-row input[type="range"]{
+      flex: 1 1 auto; width: auto; min-width: 0; max-width: none;
+      /* taller invisible hit area, same 4px visible track */
+      height: 4px; box-sizing: content-box; padding: 12px 0; background-clip: content-box;
+    }
+    .rarity-row input[type="range"]::-webkit-slider-thumb{ width: 24px; height: 24px; }
+    .rarity-row input[type="range"]::-moz-range-thumb{ width: 24px; height: 24px; }
+
+    /* guess panel: full-width input, two big buttons beneath */
+    .right-col{ gap: 8px; margin-top: 10px; }
+    .guess-panel{ padding: 10px 2px 6px; }
+    .guess-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .guess-row input{ grid-column: 1 / -1; min-height: 48px; font-size: 16px; }
+    .guess-row button, .guess-row #advanceBtn{ min-height: 48px; width: 100%; font-size: 13px; }
+    .info-btn{ width: 30px; height: 30px; }
+    .info-popover{ position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top, 0px));
+      width: auto; max-width: none; max-height: 76vh; max-height: 76dvh; overflow-y: auto; }
+
+    .ladder-card{ padding: 10px 2px 4px; }
+    .similar-grid{ gap: 6px; }
+    footer.credits{ margin-top: 22px; font-size: 10.5px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+    /* multiple-choice overlay: edge-to-edge sheet */
+    .pick-overlay{ padding: 0; align-items: stretch; }
+    .pick-modal{
+      width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; border-width: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .pick-grid{ gap: 8px; }
+
+    /* theme menu: keep fully on-screen */
+    .theme-menu{ max-width: calc(100vw - 24px); }
+  }
+
+  /* phones held sideways: short viewport, so let the photo use most of it */
+  @media (max-width: 860px) and (max-height: 520px) and (orientation: landscape){
+    .photo-stage{ height: max(200px, 78dvh) !important; }
+    .photo-card.revealed .photo-stage{ height: max(220px, 84dvh) !important; }
+  }
 
 </style>
 </head>
@@ -3364,6 +3479,10 @@
 
   // ---------- round lifecycle ----------
   let roundToken = 0;
+  // Consecutive photo-load failures. Without a cap, a blocked/offline image CDN
+  // made loadNewRound() re-fire instantly forever (flicker + restarting spinner).
+  let photoFailStreak = 0;
+  const MAX_PHOTO_FAILS = 4;
   const roundHistory = [];
   const MAX_ROUND_HISTORY = 20;
 
@@ -3374,7 +3493,7 @@
   }
 
   function snapshotCurrentRound(){
-    if(!state) return;
+    if(!state || state.photoFailed) return;
     roundHistory.push({
       state,
       mysteryFrameHTML,
@@ -3460,7 +3579,7 @@
       el.revealDetails.classList.remove("show");
       el.revealBox.innerHTML = "";
       updateAdvanceButton();
-      el.guessInput.focus();
+      focusGuessInput();
       // Keep the current round's reveal map warmed even while unrevealed.
       preloadRevealMapForState(state);
     }
@@ -3503,7 +3622,9 @@
       // Warm the reveal map immediately. It remains redacted/hidden until the
       // species is revealed, but its Leaflet instance, tiles, and range data
       // are fetched while the player is still guessing.
-      preloadRevealMapForState(state);
+      // (Deferred until the photo has loaded: it fires several large
+      // iNaturalist requests that otherwise compete with the observation,
+      // taxon and photo loads and trip iNat's rate limit.)
 
       fetchLiveWikiSummary(detail.wikipedia_url).then(summary => {
         if(myToken !== roundToken || !summary) return;
@@ -3513,11 +3634,16 @@
         if(el.revealDetails.classList.contains("show")) renderRevealDetails(state, state.finished);
       });
 
-      renderPhoto(obs).then(() => {
+      renderPhoto(obs).then(photoOk => {
         // The photo's had first claim on the network; only now do we start
         // the (low-priority) sound lookups, so a slow connection spends its
         // bandwidth on the image first and the audio candidates second.
-        if(myToken === roundToken) loadSoundForRound(detail.id, detail.name);
+        // Skip it if the photo failed: that round is about to be replaced,
+        // and starting a lookup would just restart the spinner.
+        if(photoOk && myToken === roundToken){
+          loadSoundForRound(detail.id, detail.name);
+          preloadRevealMapForState(state);
+        }
       });
       renderLadder();
       el.feed.innerHTML = "";
@@ -3585,6 +3711,13 @@
     el.photoCard.classList.remove("revealed");
   }
 
+  // On touch devices, focusing the input pops the on-screen keyboard over the
+  // photo every time a new bird loads. Only auto-focus where there's a real pointer.
+  function focusGuessInput(){
+    if(window.matchMedia && matchMedia("(pointer: coarse)").matches) return;
+    el.guessInput.focus();
+  }
+
   function setLoading(isLoading){
     if(isLoading){
       el.skeleton.style.display = "block";
@@ -3595,7 +3728,7 @@
       el.guessBtn.disabled = false;
       el.pickBtn.disabled = false;
       el.advanceBtn.disabled = false;
-      el.guessInput.focus();
+      focusGuessInput();
     }
   }
 
@@ -3603,6 +3736,7 @@
     const url = photoUrl(obs);
     const p = obs.photos && obs.photos[0];
     currentOriginalPhotoUrl = p ? photoUrlAtSize(p, "original") : null;
+    const photoRound = roundToken;
     el.photoFrame.innerHTML = '<div class="skeleton" id="skeleton"></div>';
     mysteryFrameHTML = "";
     hoverToken++;
@@ -3618,16 +3752,31 @@
         img.title = "Open original size";
       }
       img.onload = () => {
+        if(photoRound !== roundToken){ resolve(false); return; } // superseded
+        photoFailStreak = 0;
         el.photoFrame.innerHTML = "";
         el.photoFrame.appendChild(img);
         mysteryFrameHTML = el.photoFrame.innerHTML;
-        resolve();
+        resolve(true);
       };
       img.onerror = () => {
-        loadNewRound();
-        resolve(); // don't leave the sound lookup waiting forever on a dead photo
+        resolve(false);
+        if(photoRound !== roundToken) return; // stale error from an older round
+        if(state) state.photoFailed = true;   // keep it out of the Back history
+        photoFailStreak++;
+        if(photoFailStreak >= MAX_PHOTO_FAILS){
+          // Give up instead of looping: stop the shimmer/spinner and tell the user.
+          photoFailStreak = 0;
+          el.photoFrame.innerHTML = "";
+          setSoundButtonState("none");
+          setLoading(false);
+          showError("Couldn't load observation photos — check your connection or any content blocker, then press Next.");
+          return;
+        }
+        // Back off a little more each time rather than hammering the API.
+        setTimeout(() => { if(photoRound === roundToken) loadNewRound(); }, 400 * photoFailStreak);
       };
-      img.src = url;
+      if(url) img.src = url; else setTimeout(() => img.onerror(), 0); // no photo URL at all: treat as a load failure
 
       const login = (obs.user && (obs.user.name || obs.user.login)) || "unknown observer";
       const profileUrl = (obs.user && obs.user.uri) || (login !== "unknown observer"
