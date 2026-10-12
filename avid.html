@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23233c2e'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='Georgia, serif' font-size='30' font-weight='700' fill='%23f4f1ea'%3EAv%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Arimo:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
   @font-face {
@@ -116,7 +116,10 @@
 
     --radius: 3px;
     --font-display: 'Fraunces', serif;
-    --font-body: 'Arial', serif;
+    /* Arial is a system font, not a webfont: Android (and some Linux) don't ship it,
+       and the old `serif` fallback made all UI text render in a Times-style serif there.
+       Arial still wins wherever it exists; Arimo (metric-identical, loaded below) is the fallback. */
+    --font-body: 'Arial', 'Arimo', 'Helvetica Neue', Helvetica, Roboto, 'Liberation Sans', system-ui, sans-serif;
     --font-mono: 'Courier Prime', monospace;
     --font-species-title: 'Crimson Pro', 'Fraunces', serif;
   }
@@ -2514,7 +2517,10 @@
     .guess-panel{ padding: 10px 2px 6px; }
     .guess-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .guess-row input{ grid-column: 1 / -1; min-height: 48px; font-size: 16px; }
-    .guess-row button, .guess-row #advanceBtn{ min-height: 48px; width: 100%; font-size: 13px; }
+    .guess-row button, .guess-row #advanceBtn{ min-height: 48px; width: 100%; font-size: 13px; font-weight: 600; }
+    /* Reveal/Next only got its bold weight while enabled, so during loading it
+       looked thinner than Guess. Keep both buttons' type identical in every state. */
+    .guess-row #advanceBtn:disabled{ font-weight: 600; }
     .info-btn{ width: 30px; height: 30px; }
     .info-popover{ position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top, 0px));
       width: auto; max-width: none; max-height: 76vh; max-height: 76dvh; overflow-y: auto; }
