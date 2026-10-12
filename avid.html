@@ -2372,6 +2372,9 @@
     background: var(--color-input-bg);
   }
 
+  /* Mobile settings panel pieces: invisible and inert on desktop. */
+  .settings-btn, .settings-root{ display: none; }
+
   /* ==========================================================
      MOBILE MODE  (<= 860px wide only — desktop is untouched)
      Appended last so it wins over the earlier theme overrides.
@@ -2390,18 +2393,73 @@
                calc(12px + env(safe-area-inset-left, 0px));
     }
 
-    /* header: title + Class + Mode on one compact row */
-    .header-bar{ flex-wrap: nowrap; gap: 10px; margin-bottom: 10px; align-items: center; }
+    /* header: title + a single Settings button. Class / Mode / Region / Rarity
+       live in the settings sheet (the JS at the end of the page moves those
+       blocks in and out of it, so nothing is duplicated). */
+    .header-bar{ flex-wrap: nowrap; gap: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; }
     .app-title{ flex: 0 0 auto; font-size: 26px; }
-    .header-controls{ flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; gap: 8px; justify-content: flex-end; }
-    .header-controls .gamemode-row{ flex: 1 1 0; min-width: 0; display: flex; }
-    .header-controls .gamemode-row label{
-      position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    .settings-btn{
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      flex: 0 0 auto; height: 42px; padding: 0 14px 0 12px;
+      border-radius: 8px; cursor: pointer;
+      background: var(--color-surface); color: var(--color-accent);
+      border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+      font-family: var(--font-body); font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
     }
-    .header-controls .gamemode-row select{
-      width: 100%; min-width: 0; min-height: 42px; font-size: 16px; /* 16px stops iOS zoom-on-focus */
-      text-overflow: ellipsis;
+    .settings-btn svg{ width: 18px; height: 18px; display: block; }
+    .settings-btn:active{ transform: translateY(1px); }
+
+    /* settings bottom sheet */
+    html.settings-open, html.settings-open body{ overflow: hidden; }
+    .settings-root{
+      display: block; position: fixed; inset: 0; z-index: 90;
+      visibility: hidden; pointer-events: none; transition: visibility 0s linear 0.25s;
     }
+    .settings-root.open{ visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .settings-scrim{
+      position: absolute; inset: 0; background: var(--color-scrim-strong);
+      opacity: 0; transition: opacity 0.25s ease;
+    }
+    .settings-root.open .settings-scrim{ opacity: 1; }
+    .settings-sheet{
+      position: absolute; left: 0; right: 0; bottom: 0; outline: none;
+      background: var(--color-surface); color: var(--color-text-primary);
+      border-radius: 16px 16px 0 0;
+      border-top: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+      padding: 14px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+      transform: translateY(100%); transition: transform 0.25s ease;
+    }
+    .settings-root.open .settings-sheet{ transform: none; }
+    .settings-head{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .settings-head h2{
+      margin: 0; font-family: 'Seaford', 'Segoe UI', Arial, sans-serif; font-size: 13px; font-weight: 600;
+      letter-spacing: normal; text-transform: uppercase; color: var(--color-accent);
+    }
+    .settings-close{
+      width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;
+      background: transparent; color: var(--color-text-muted); font-size: 22px; line-height: 1;
+      border: 1px solid color-mix(in srgb, var(--color-border) var(--border-mix, 55%), var(--color-bg-page));
+      border-radius: 8px; cursor: pointer;
+    }
+    .settings-body{ display: flex; flex-direction: column; gap: 16px; }
+    .settings-done{ width: 100%; min-height: 48px; margin-top: 16px; }
+
+    .settings-sheet .header-controls{
+      display: flex; flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 12px; justify-content: flex-start;
+    }
+    .settings-sheet .header-controls .gamemode-row{ display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+    .settings-sheet .header-controls .gamemode-row label{
+      position: static; width: 52px; height: auto; flex: 0 0 52px; overflow: visible; clip: auto; white-space: nowrap;
+      font-size: 10.5px;
+    }
+    .settings-sheet .header-controls .gamemode-row select{
+      flex: 1 1 auto; width: auto; min-width: 0; min-height: 44px; font-size: 16px; text-overflow: ellipsis;
+    }
+    .settings-sheet .obs-settings-row{
+      padding: 0; border: 0; background: transparent; gap: 14px;
+    }
+    .settings-sheet .region-input-wrap{ flex: 1 1 auto; }
+    .settings-sheet .region-status:empty{ display: none; }
 
     .err-banner{ margin-bottom: 10px; font-size: 13px; }
 
@@ -2479,6 +2537,7 @@
 
   /* phones held sideways: short viewport, so let the photo use most of it */
   @media (max-width: 860px) and (max-height: 520px) and (orientation: landscape){
+    .settings-sheet{ max-height: 94dvh; overflow-y: auto; }
     .photo-stage{ height: max(200px, 78dvh) !important; }
     .photo-card.revealed .photo-stage{ height: max(220px, 84dvh) !important; }
   }
@@ -2490,6 +2549,11 @@
 
   <header class="header-bar">
     <h1 class="app-title"><em id="appTitlePrefix">Av</em><b>ID</b></h1>
+
+    <button type="button" class="settings-btn" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsRoot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>
+      <span>Settings</span>
+    </button>
 
     <div class="header-controls">
       <div class="gamemode-row">
@@ -2665,6 +2729,18 @@
       </div>
     </div>
   </main>
+
+  <div class="settings-root" id="settingsRoot" aria-hidden="true">
+    <div class="settings-scrim" id="settingsScrim"></div>
+    <div class="settings-sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
+      <div class="settings-head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button type="button" class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
+      </div>
+      <div class="settings-body" id="settingsBody"></div>
+      <button type="button" class="primary settings-done" id="settingsDone">Done</button>
+    </div>
+  </div>
 
   <div class="pick-overlay" id="pickOverlay">
     <div class="pick-modal">
@@ -6024,6 +6100,68 @@
 
   applyTheme('');
   applyAppearance(false);
+})();
+</script>
+<script>
+/* Mobile settings sheet. On narrow screens the existing Class/Mode block and the
+   Region/Rarity row are *moved* (not cloned) into a bottom sheet, so every
+   existing element id, reference and event listener keeps working. Wider than
+   860px they sit back in their original spots, and on a desktop-width load
+   nothing here touches the DOM at all. */
+(function(){
+  var mq = window.matchMedia("(max-width: 860px)");
+  var root = document.getElementById("settingsRoot");
+  var sheet = document.getElementById("settingsSheet");
+  var body = document.getElementById("settingsBody");
+  var btn = document.getElementById("settingsBtn");
+  var hc = document.querySelector(".header-controls");
+  var osr = document.querySelector(".obs-settings-row");
+  if(!root || !btn || !hc || !osr) return;
+  var hcMark = document.createComment("header-controls");
+  var osrMark = document.createComment("obs-settings-row");
+  var moved = false;
+
+  function open(){
+    root.classList.add("open");
+    root.setAttribute("aria-hidden", "false");
+    btn.setAttribute("aria-expanded", "true");
+    document.documentElement.classList.add("settings-open");
+    sheet.focus({ preventScroll: true }); // focus the sheet, not an input: no surprise keyboard
+  }
+  function close(){
+    if(!root.classList.contains("open")) return;
+    root.classList.remove("open");
+    root.setAttribute("aria-hidden", "true");
+    btn.setAttribute("aria-expanded", "false");
+    document.documentElement.classList.remove("settings-open");
+    var a = document.activeElement;
+    if(a && sheet.contains(a)) a.blur(); // dismiss any open keyboard / region suggestions
+  }
+  function toSheet(){
+    if(moved) return;
+    hc.parentNode.insertBefore(hcMark, hc);
+    osr.parentNode.insertBefore(osrMark, osr);
+    body.appendChild(hc);
+    body.appendChild(osr);
+    moved = true;
+  }
+  function toPage(){
+    if(!moved) return;
+    close();
+    hcMark.parentNode.replaceChild(hc, hcMark);
+    osrMark.parentNode.replaceChild(osr, osrMark);
+    moved = false;
+  }
+  function sync(){ if(mq.matches) toSheet(); else toPage(); }
+
+  btn.addEventListener("click", function(){ root.classList.contains("open") ? close() : open(); });
+  document.getElementById("settingsClose").addEventListener("click", close);
+  document.getElementById("settingsDone").addEventListener("click", close);
+  document.getElementById("settingsScrim").addEventListener("click", close);
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+
+  sync();
+  if(mq.addEventListener) mq.addEventListener("change", sync); else mq.addListener(sync);
 })();
 </script>
 </body>
